@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="es.cv.gvcase.gvm.glossary.navigator.provider.GlossaryContentProvider"
+            id="es.cv.gvcase.gvm.glossary.navigator.GlossaryNavigatorContentProvider"
+            labelProvider="es.cv.gvcase.gvm.glossary.navigator.provider.GlossaryContentProvider"
+            name="Glossary Content Provider"
+            priority="normal">
+         <triggerPoints>
+            <or>
+               <adapt
+                     type="org.eclipse.core.resources.IWorkspaceRoot">
+               </adapt>
+               <adapt
+                     type="es.cv.gvcase.ide.navigator.provider.NavigatorRootItem">
+               </adapt>
+               <adapt
+                     type="es.cv.gvcase.ide.navigator.provider.NavigatorLoadedResourcesItem">
+               </adapt>
+               <adapt
+                     type="org.eclipse.emf.ecore.EObject">
+               </adapt>
+               <adapt
+                     type="org.eclipse.emf.ecore.resource.Resource">
+               </adapt>
+               <adapt
+                     type="es.cv.gvcase.ide.navigator.provider.PackagingNode">
+               </adapt>
+            </or>
+         </triggerPoints>
+         <possibleChildren>
+            <or>
+               <adapt
+                     type="es.cv.gvcase.ide.navigator.provider.NavigatorLoadedResourcesItem">
+               </adapt>
+               <adapt
+                     type="org.eclipse.emf.ecore.EObject">
+               </adapt>
+               <adapt
+                     type="org.eclipse.emf.ecore.resource.Resource">
+               </adapt>
+               <adapt
+                     type="es.cv.gvcase.ide.navigator.provider.PackagingNode">
+               </adapt>
+            </or>
+         </possibleChildren>
+      </navigatorContent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerContentBinding
+            viewerId="es.cv.gvcase.ide.navigator.modelView">
+         <includes>
+            <contentExtension
+                  pattern="es.cv.gvcase.gvm.glossary.navigator.GlossaryNavigatorContentProvider">
+            </contentExtension>
+         </includes>
+      </viewerContentBinding>
+   </extension>
+
+</plugin>

@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name.0
+Bundle-SymbolicName: es.cv.gvcase.gvm.glossary.formseditor; singleton:=true
+Bundle-Version: 1.3.0.qualifier
+Bundle-Activator: es.cv.gvcase.gvm.glossary.formseditor.GlossaryFormEditorPlugin
+Require-Bundle: org.eclipse.emf.ecoretools.tabbedproperties;bundle-version="0.8.0",
+ es.cv.gvcase.gvm.glossary.editor,
+ es.cv.gvcase.fefem.common,
+ es.cv.gvcase.emf.common
+Bundle-ActivationPolicy: lazy
+Bundle-Localization: plugin
+Bundle-Vendor: gvCASE Project
+Export-Package: es.cv.gvcase.gvm.glossary.formseditor
+Bundle-RequiredExecutionEnvironment: J2SE-1.5

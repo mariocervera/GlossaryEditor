@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="es.cv.gvcase.gvm.glossary.formseditor.GlossaryFormEditor"
+            contributorClass="es.cv.gvcase.gvm.glossary.formseditor.GlossaryFormEditorContributor"
+            default="true"
+            extensions="glossary"
+            icon="icons/icon_gloss.gif"
+            id="es.cv.gvcase.gvm.glossary.formseditor.editors.GlossaryMultiPageEditor"
+            name="%editorName">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            name="%wizardName"
+            icon="icons/icon_gloss.gif"
+            category="es.cv.gvcase.gvm"
+            class="es.cv.gvcase.gvm.glossary.formseditor.GlossaryModelWizard"
+            id="es.cv.gvcase.gvm.glossary.formseditor.wizards.GlossaryNewWizard">
+         <description>
+            %wizardDescription
+         </description>
+      </wizard>
+   </extension>
+
+</plugin>
