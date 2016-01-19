@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="editingDomainFactory" name="editingDomainFactory" schema="schema/editingDomainFactory.exsd"/>
+   <extension-point id="itemProviderAdapterFactories" name="Registered Item Provider Adapter Factories" schema="schema/itemProviderAdapterFactories.exsd"/>
+
+</plugin>

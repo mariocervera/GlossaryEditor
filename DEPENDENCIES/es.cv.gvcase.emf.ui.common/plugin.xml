@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="es.cv.gvcase.emf.ui.common.CompareContribution"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="es.cv.gvcase.emf.ui.common.actions.CompareAction"
+               enablesFor="1"
+               icon="icons/compare.gif"
+               id="es.cv.gvcase.emf.ui.common.compareAction"
+               label="MOSKitt Compare"
+               menubarPath="additions"
+               style="push">
+         </action>
+      </objectContribution>
+   </extension>
+
+</plugin>

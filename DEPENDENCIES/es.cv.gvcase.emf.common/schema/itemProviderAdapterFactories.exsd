@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="es.cv.gvcase.emf.common" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="es.cv.gvcase.emf.common" id="itemProviderAdapterFactories" name="Registered Item Provider Adapter Factories"/>
+      </appInfo>
+      <documentation>
+         This extension point is used to register the item provider adatper factory that is able to produce adapters for the given supported types for the given package. The global item provider adapter factory registry, &lt;samp&gt;ComposedAdapterFactory.Descriptor.Registry.INSTANCE&lt;/samp&gt;, is used to record the registration.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="PriorityAdapterFactory" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A fully qualified identifier of the target extension point.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  An optional identifier of the extension instance.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  An optional name of the extension instance.
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="PriorityAdapterFactory">
+      <complexType>
+         <attribute name="uri" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The namespace URI of an EPackage or the fully qualified name of a Java package.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="factoryClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The fully qualified Java class name of an item provider adapter factory.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="supportedTypes" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A space separated list of fully Java interface names representing the types of adapters supported by the item provider adapter factory.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="priority" use="default" value="5">
+            <annotation>
+               <documentation>
+                  When exists more than one adapter factory for the same object,the highest priority property indicates which one is used.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="1">
+                  </enumeration>
+                  <enumeration value="2">
+                  </enumeration>
+                  <enumeration value="3">
+                  </enumeration>
+                  <enumeration value="4">
+                  </enumeration>
+                  <enumeration value="5">
+                  </enumeration>
+               </restriction>
+            </simpleType>
+         </attribute>
+      </complexType>
+   </element>
+
+
+
+
+
+
+</schema>
