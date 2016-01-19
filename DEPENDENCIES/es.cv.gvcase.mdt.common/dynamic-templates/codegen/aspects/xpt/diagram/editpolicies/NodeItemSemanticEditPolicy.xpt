@@ -1,0 +1,52 @@
+﻿/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ *    Artem Tikhomirov (Borland) - [257632] do not rely on EditPart presence for element deletion
+ *	  Marc Gil Sendra (Prodevelop) - add a new method to remove the children editParts recursively
+ */
+ 
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION xpt::diagram::editpolicies::Utils»
+
+«REM»Marc Gil:: Use our DestroyElementCommand instead of the one from GMF. It allows
+to delete the children model elements recursively«ENDREM»
+«AROUND getDestroyElementCommand FOR gmfgen::GenNode-»
+«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.gef.commands.Command getDestroyElementCommand(org.eclipse.gmf.runtime.emf.type.core.requests.DestroyElementRequest req) {
+	org.eclipse.gmf.runtime.notation.View view = (org.eclipse.gmf.runtime.notation.View) getHost().getModel();
+	org.eclipse.gmf.runtime.emf.commands.core.command.CompositeTransactionalCommand cmd = new org.eclipse.gmf.runtime.emf.commands.core.command.CompositeTransactionalCommand(getEditingDomain(), null);
+	cmd.setTransactionNestingEnabled(false);
+	«EXPAND xpt::diagram::editpolicies::NodeItemSemanticEditPolicy::destroyEdges('view')-»
+	org.eclipse.emf.ecore.EAnnotation annotation = view.getEAnnotation("Shortcut");«EXPAND xpt::Common::nonNLS»
+	if (annotation == null) {
+		// there are indirectly referenced children, need extra commands: «childNodes->union(compartments.childNodes->asBag())->exists(not isDirectlyOwned(self))»
+«IF hasChildrenOrCompartments(self)-»
+		addDestroyChildNodesCommand(cmd);
+«ENDIF-»
+		addDestroyShortcutsCommand(cmd, view);
+		// delete host element
+		cmd.add(new es.cv.gvcase.mdt.common.commands.DestroyElementCommand(req));
+	} else {«REM»Here, we may play smart and don't generate else for non-toplevel nodes(which can't be shortcuts). Is it worth doing?«ENDREM»
+		cmd.add(new org.eclipse.gmf.runtime.diagram.core.commands.DeleteCommand(getEditingDomain(), view));
+	}
+	return getGEFWrapper(cmd.reduce());
+}
+«ENDAROUND»
+
+«REM»Marc Gil:: use the new method getDestroyElementCommand to remove the children
+editParts recursively«ENDREM»
+«AROUND destroyChildNodes(nodeVar : String, gmfgen::GenNode genNode) FOR gmfgen::GenChildNode-»
+«EXPAND xpt::Common::caseVisualID»
+	«EXPAND xpt::diagram::editpolicies::NodeItemSemanticEditPolicy::destroyEdges(nodeVar)-»
+	cmd.add(new es.cv.gvcase.mdt.common.commands.wrappers.GEFtoGMFCommandWrapper(
+								getDestroyElementCommand(«nodeVar»)));
+	break;
+«ENDAROUND»

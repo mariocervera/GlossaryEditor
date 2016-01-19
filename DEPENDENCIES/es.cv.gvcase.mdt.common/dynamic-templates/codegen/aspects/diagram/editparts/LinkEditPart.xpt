@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«DEFINE extendsList FOR gmfgen::GenLink»extends es.cv.gvcase.mdt.common.diagram.editparts.ConnectionNodeEditPart«ENDDEFINE»
+
+«AROUND additions FOR gmfgen::GenLink»
+	«EXPAND handleNotificationEvent FOR self»
+«ENDAROUND»
+
+«DEFINE handleNotificationEvent FOR gmfgen::GenLink»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void handleNotificationEvent(org.eclipse.emf.common.notify.Notification notification) {
+		super.handleNotificationEvent(notification);
+		
+		// mgil:: if the notification is for ADD an element and the element is
+		// an Edge, don't refresh the Diagram to avoid duplicated Links
+		if (notification.getEventType() == org.eclipse.emf.common.notify.Notification.ADD
+				&& «diagram.editorGen.editor.packageName».«diagram.visualIDRegistryClassName»
+						.«EXPAND xpt::editor::VisualIDRegistry::getLinkWithClassVisualIDMethodName FOR diagram»((org.eclipse.emf.ecore.EObject) notification
+								.getNewValue()) > -1) {
+			return;
+		} else {
+			java.util.List<org.eclipse.emf.ecore.EStructuralFeature> features = new java.util.ArrayList<org.eclipse.emf.ecore.EStructuralFeature>();
+			«EXPAND searchFeaturesForSemanticChange FOR modelFacet-»
+			es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.handleNotificationForDiagram(this, notification, features);
+		}
+		// mgil:: end
+	}
+«ENDDEFINE»
+
+«DEFINE searchFeaturesForSemanticChange FOR gmfgen::TypeLinkModelFacet-»
+	«IF sourceMetaFeature <> null-»
+	features.add(«EXPAND MetaModel::MetaFeature FOR sourceMetaFeature»);
+	«ELSE-»
+	// no source feature
+	«ENDIF-»
+	«IF targetMetaFeature <> null-»
+	features.add(«EXPAND MetaModel::MetaFeature FOR targetMetaFeature»);
+	«ELSE-»
+	// no target feature
+	«ENDIF-»
+«ENDDEFINE»
+
+
+«DEFINE searchFeaturesForSemanticChange FOR gmfgen::LinkModelFacet»
+	// no target or source features found
+«ENDDEFINE»

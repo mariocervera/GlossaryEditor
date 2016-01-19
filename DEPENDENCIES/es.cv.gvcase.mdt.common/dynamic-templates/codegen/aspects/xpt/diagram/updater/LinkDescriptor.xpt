@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«AROUND LinkDescriptor FOR gmfgen::GenDiagramUpdater-»
+	«EXPAND xpt::Common::copyright FOR editorGen-»
+package «editorGen.editor.packageName»;
+
+	«EXPAND xpt::Common::generatedClassComment»
+«REM» fjcano :: implementing ILinkDescriptor for general treatment in common code «ENDREM»	
+public class «linkDescriptorClassName» extends «getNodeDescriptorQualifiedClassName()» implements es.cv.gvcase.mdt.common.provider.ILinkDescriptor {
+
+	«EXPAND xpt::diagram::updater::LinkDescriptor::attributes-»
+	
+	«EXPAND xpt::diagram::updater::LinkDescriptor::_constructor-»
+	
+	«EXPAND xpt::diagram::updater::LinkDescriptor::refOnlyLinkConstructor-»
+	
+	«EXPAND xpt::diagram::updater::LinkDescriptor::typeLinkConstructor-»
+	
+	«EXPAND xpt::diagram::updater::LinkDescriptor::getSource-»
+
+	«EXPAND xpt::diagram::updater::LinkDescriptor::getDestination-»
+	
+	«EXPAND xpt::diagram::updater::LinkDescriptor::getSemanticAdapter-»
+		
+	«EXPAND xpt::diagram::updater::LinkDescriptor::additions-»
+}
+«ENDAROUND»

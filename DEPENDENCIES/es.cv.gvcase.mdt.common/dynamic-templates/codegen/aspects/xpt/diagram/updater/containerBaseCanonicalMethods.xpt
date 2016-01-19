@@ -1,0 +1,71 @@
+/*
+ * Copyright (c) 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Michael Golubev (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/GenModel'»
+
+«EXTENSION xpt::diagram::updater::Utils»
+«EXTENSION xpt::GenModelUtils»
+
+«AROUND getSemanticChildrenList FOR gmfgen::GenContainerBase-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected java.util.List getSemanticChildrenList() {
+	«IF hasSemanticChildren(self)-»
+	org.eclipse.gmf.runtime.notation.View viewObject = (org.eclipse.gmf.runtime.notation.View) getHost().getModel();
+	java.util.List<org.eclipse.emf.ecore.EObject> result = new java.util.ArrayList<org.eclipse.emf.ecore.EObject>();
+	for (java.util.Iterator it = «EXPAND xpt::diagram::updater::DiagramUpdater::getSemanticChildrenMethodCall»(viewObject).iterator(); it.hasNext();) {
+		org.eclipse.emf.ecore.EObject nextValue = ((«getDiagram().editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()») it.next()).getModelElement(); 
+		result.add(nextValue);
+	}
+	«REM» fjcano :: remove all elements that are not in the diagram's reference list; those elements are not meant to be shown «ENDREM»
+	return es.cv.gvcase.mdt.common.util.MultiDiagramUtil.trimElementsToShow(result, this);
+	«ELSE-»
+	return java.util.Collections.EMPTY_LIST;
+	«ENDIF-»
+}
+«ENDAROUND»
+
+«AROUND isOrphaned FOR gmfgen::GenContainerBase-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected boolean isOrphaned(java.util.Collection semanticChildren, final org.eclipse.gmf.runtime.notation.View view) {
+	«REM» fjcano :: a 'note' or 'text' element will never be considered orphan «ENDREM»
+	if (view.getType() == org.eclipse.gmf.runtime.diagram.core.util.ViewType.NOTE || view.getType() == org.eclipse.gmf.runtime.diagram.core.util.ViewType.TEXT) {
+			return false;
+	}
+	if (es.cv.gvcase.mdt.common.util.MDTUtil.isOrphanView(view)) {
+		return true;
+	}
+	if (view.getElement() != null) {
+		int actualID = «EXPAND xpt::editor::VisualIDRegistry::getVisualIDMethodCall FOR getDiagram()»(view);
+		int suggestedID = «EXPAND xpt::editor::VisualIDRegistry::getNodeVisualIDMethodCall FOR getDiagram()»((org.eclipse.gmf.runtime.notation.View) getHost().getModel(), view.getElement());
+		switch (actualID) {
+			«EXPAND xpt::Common::caseVisualID FOREACH getSemanticChildren(self)»
+			«EXPAND orphanedSemanticReturn FOR self-»
+		}
+		return false;
+	}
+	return true;	
+}
+«ENDAROUND»
+
+
+«DEFINE orphanedSemanticReturn FOR gmfgen::GenCompartment-»
+	«IF listLayout-»
+			return actualID != suggestedID || !semanticChildren.contains(view.getElement());
+	«ELSE-»
+			return actualID != suggestedID;
+	«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE orphanedSemanticReturn FOR gmfgen::GenContainerBase-»
+			return actualID != suggestedID;
+«ENDDEFINE»

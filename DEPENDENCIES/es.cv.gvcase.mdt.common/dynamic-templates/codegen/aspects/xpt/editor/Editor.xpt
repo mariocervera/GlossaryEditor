@@ -1,0 +1,227 @@
+/*
+ * Copyright (c) 2006,2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::editor::Utils»
+
+«AROUND Editor FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::copyright FOR editorGen-»
+package «packageName»;
+
+	«EXPAND xpt::Common::generatedClassComment»
+	«REM» fjcano :: extend the CachedResourcesDiagramEditor from MOSKitt «ENDREM»
+public class «className»  extends es.cv.gvcase.mdt.common.part.CachedResourcesDiagramEditor «EXPAND xpt::editor::Editor::implementsList FOR getEditorImplementsList(self)» {
+	// good
+	«EXPAND xpt::editor::Editor::attributes-»
+	
+	«EXPAND xpt::editor::Editor::_constructor-»
+	
+	«EXPAND xpt::editor::Editor::getContextID-»
+	
+	«REM» fjcano :: method to get the editing domain identifier,
+	      necessary to extend from CachedResourcesDiagramEditor «ENDREM»
+	«EXPAND editingDomainID-»
+	
+	«EXPAND xpt::editor::Editor::createPaletteRoot FOR editorGen.diagram.palette-»
+	
+	«EXPAND xpt::editor::Editor::getPreferencesHint-»
+	
+	«REM» fjcano :: method to get the editor identifier,
+	      necessary to extend from CachedReosurcesDiagramEditor «ENDREM»
+	«EXPAND getEditorID FOR self-»
+	
+	«EXPAND xpt::editor::Editor::getContributorId-»
+	«EXPAND xpt::editor::Editor::getAdapter-»
+	
+	«EXPAND xpt::editor::Editor::getDocumentProvider-»
+	
+	«EXPAND xpt::editor::Editor::getEditingDomain-»
+	
+	«EXPAND xpt::editor::Editor::setDocumentProvider-»
+	«IF isIDEMode(self)-»
+	
+		«EXPAND xpt::editor::Editor::gotoMarker-»
+		
+		«EXPAND xpt::editor::Editor::isSaveAsAllowed-»
+		
+		«EXPAND xpt::editor::Editor::doSaveAs-»
+		
+		«EXPAND xpt::editor::Editor::performSaveAs-»
+		
+		«EXPAND xpt::editor::Editor::getShowInContext-»
+		«EXPAND xpt::editor::Editor::getNavigatorSelection FOR editorGen.navigator-»
+	«ENDIF-»
+	
+	«IF editorGen.diagram.generateCreateShortcutAction()-»
+		«EXPAND xpt::editor::Editor::initializeGraphicalViewer-»
+		
+		«EXPAND xpt::editor::Editor::DropTargetListener-»
+	«ENDIF-»
+
+	«EXPAND xpt::editor::Editor::additions-»
+}
+«ENDAROUND»
+
+«REM» fjcano :: implementing the getEditorID method from the abstract CachedResourcesDiagramEditor «ENDREM»
+«DEFINE getEditorID FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	@Override
+	public String getEditorID() {
+		return ID;
+	}
+«ENDDEFINE»
+
+«DEFINE _constructor FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+public «className»() {
+	super(«null <> editorGen.diagram.palette and editorGen.diagram.palette.flyout»);
+}
+«ENDDEFINE»
+
+«DEFINE getContributorId FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public String getContributorId() {
+		return «editorGen.plugin.getActivatorQualifiedClassName()».ID;
+	}
+«ENDDEFINE»
+
+«AROUND getAdapter FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public Object getAdapter(Class type) {
+	«IF not hasPropertySheet(self) or hasNavigator(self)-»
+		«IF not hasPropertySheet(self)-»
+		if (type == org.eclipse.ui.views.properties.IPropertySheetPage.class) {
+			return null;
+		}
+		«ENDIF-»
+		«IF hasNavigator(self)-»
+		if (type == org.eclipse.ui.part.IShowInTargetList.class) {
+			return new org.eclipse.ui.part.IShowInTargetList() {
+				public String[] getShowInTargetIds() {
+					return new String[] { org.eclipse.ui.navigator.resources.ProjectExplorer.VIEW_ID };
+				}
+			};
+		}
+		«ENDIF-»F
+	«ENDIF-»
+		if (org.eclipse.ui.IEditorActionBarContributor.class.equals(type)) {
+			return new «packageName».«actionBarContributorClassName»();
+		}
+		return super.getAdapter(type);
+	}
+«ENDAROUND»
+
+«AROUND getDocumentProvider FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.gmf.runtime.diagram.ui.resources.editor.document.IDocumentProvider getDocumentProvider(org.eclipse.ui.IEditorInput input) {
+	if («EXPAND xpt::editor::Editor::checkEditorInput») {
+		«REM» fjcano :: creating a document provider needs both the editing domain and the editor input«ENDREM»
+		return «editorGen.plugin.getActivatorQualifiedClassName()».getInstance().getDocumentProvider(getEditingDomainID(), input);
+	}
+	return super.getDocumentProvider(input);
+}
+«ENDAROUND»
+
+«AROUND setDocumentProvider FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected void setDocumentProvider(org.eclipse.ui.IEditorInput input) {
+	if («EXPAND xpt::editor::Editor::checkEditorInput») {
+		«REM» fjcano :: getting the document provider needs both the editing domain and the editor input «ENDREM»
+		setDocumentProvider(«editorGen.plugin.getActivatorQualifiedClassName()».getInstance().getDocumentProvider(getEditingDomainID(), input));
+	} else {
+		super.setDocumentProvider(input);
+	}
+}
+«ENDAROUND»
+
+«REM» fjcano :: implementation of the getEditingDomainID for 
+the abstract CachedResourcesDiagramEditor «ENDREM»
+«DEFINE editingDomainID FOR gmfgen::GenEditorView»
+«EXPAND xpt::Common::generatedMemberComment»
+	«REM»[gmerin] changed visibility from protected to public«ENDREM»
+	public String getEditingDomainID() {
+		return "«editorGen.diagram.editingDomainID»";
+	}
+«ENDDEFINE»
+
+«AROUND DTL_getObjectsBeingDropped FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected java.util.List getObjectsBeingDropped() {
+	org.eclipse.swt.dnd.TransferData data = getCurrentEvent().currentDataType;
+	java.util.Collection uris = new java.util.HashSet();
+
+	java.util.List result = new java.util.ArrayList();
+	Object transferedObject = getJavaObject(data);
+	if (transferedObject instanceof org.eclipse.jface.viewers.IStructuredSelection) {
+		org.eclipse.jface.viewers.IStructuredSelection selection = (org.eclipse.jface.viewers.IStructuredSelection) transferedObject;
+		for (java.util.Iterator it = selection.iterator(); it.hasNext();) {
+			Object nextSelectedObject = it.next();
+«REM»
+	TODO: move NavigatorItem to some place available in runtime and remove 
+	"genEditor.getEditorGen().getNavigator() != null" test
+«ENDREM»«-»
+			«IF hasNavigator(self)»if (nextSelectedObject instanceof «editorGen.navigator.getNavigatorItemQualifiedClassName()») {
+				org.eclipse.gmf.runtime.notation.View view = ((«editorGen.navigator.getNavigatorItemQualifiedClassName()») nextSelectedObject).getView();
+				nextSelectedObject = view.getElement();
+			} else «ENDIF»if (nextSelectedObject instanceof org.eclipse.core.runtime.IAdaptable) {
+				org.eclipse.core.runtime.IAdaptable adaptable = (org.eclipse.core.runtime.IAdaptable) nextSelectedObject;
+				nextSelectedObject = adaptable.getAdapter(org.eclipse.emf.ecore.EObject.class);
+			}
+
+			if (nextSelectedObject instanceof org.eclipse.emf.ecore.EObject) {
+				org.eclipse.emf.ecore.EObject modelElement = (org.eclipse.emf.ecore.EObject) nextSelectedObject;
+				org.eclipse.emf.ecore.resource.Resource modelElementResource = modelElement.eResource();
+				uris.add(modelElementResource.getURI().appendFragment(modelElementResource.getURIFragment(modelElement)));	
+			}
+			
+			if (nextSelectedObject instanceof org.eclipse.emf.ecore.EObject) {
+				result.add(nextSelectedObject);
+			}
+		}
+	}
+	return result;
+}
+«ENDAROUND»
+
+«REM» fjcano :: applied to correct the 'Received wrong trasfer data' «ENDREM»
+«AROUND xpt::editor::Editor::initializeGraphicalViewer FOR gmfgen::GenEditorView-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected void initializeGraphicalViewer() {
+	super.initializeGraphicalViewer();
+	«EXPAND addDropTargetListenerToSelection('org.eclipse.jface.util.LocalSelectionTransfer.getTransfer()')-»
+	«EXPAND addDropTargetListenerToNative('org.eclipse.emf.edit.ui.dnd.LocalTransfer.getInstance()')-»
+}
+«ENDAROUND»
+
+«REM» fjcano :: applied to correct the 'Received wrong trasfer data' «ENDREM»
+«DEFINE addDropTargetListenerToSelection(transferAccessor : String) FOR gmfgen::GenEditorView-»
+getDiagramGraphicalViewer().addDropTargetListener(new DropTargetListener(getDiagramGraphicalViewer(), «transferAccessor») {
+
+	protected Object getJavaObject(org.eclipse.swt.dnd.TransferData data) {
+		return «transferAccessor».getSelection();
+	}
+
+});
+«ENDDEFINE»
+
+«REM» fjcano :: applied to correct the 'Received wrong trasfer data' «ENDREM»
+«DEFINE addDropTargetListenerToNative(transferAccessor : String) FOR gmfgen::GenEditorView-»
+getDiagramGraphicalViewer().addDropTargetListener(new DropTargetListener(getDiagramGraphicalViewer(), «transferAccessor») {
+
+	protected Object getJavaObject(org.eclipse.swt.dnd.TransferData data) {
+		return «transferAccessor».nativeToJava(data);
+	}
+
+});
+«ENDDEFINE»
+

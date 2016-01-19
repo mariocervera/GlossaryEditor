@@ -1,0 +1,282 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Artem Tikhomirov (Borland) - initial API and implementation
+ *	  Gabriel Merin (Integranova) - diagram version added
+ *    Francisco Javier Cano Munyoz - adaptation to Galileo
+ */
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::editor::GenDiagram»
+«EXTENSION xpt::editor::Utils»
+
+«AROUND DiagramEditorUtil FOR gmfgen::GenDiagram-»
+	«EXPAND xpt::Common::copyright FOR editorGen-»
+package «editorGen.editor.packageName»;
+
+«EXPAND xpt::Common::generatedClassComment»
+«REM» fjcano :: implement the IMOSKittEditorFactory for the modelId to editor factory registry that created editors given a model identifier «ENDREM»
+public class «diagramEditorUtilClassName» implements es.cv.gvcase.mdt.common.provider.IMOSKittEditorFactory {
+
+«EXPAND xpt::editor::DiagramEditorUtil::saveOptions-»
+
+«EXPAND xpt::editor::DiagramEditorUtil::openDiagramMethod-»
+«IF editorGen.application = null-»
+	«EXPAND xpt::editor::DiagramEditorUtil::setCharsetMethods-»
+«ENDIF-»
+
+«EXPAND xpt::editor::DiagramEditorUtil::getUniqueFileNameMethod-»
+
+«EXPAND createModel-»
+
+«IF editorGen.application <> null»
+	/**
+	 * Allows user to select file and loads it as a model.
+	 * 
+	 * @generated
+	 */
+	public static org.eclipse.emf.ecore.resource.Resource openModel(
+			org.eclipse.swt.widgets.Shell shell, String description, org.eclipse.emf.transaction.TransactionalEditingDomain editingDomain) {
+		org.eclipse.swt.widgets.FileDialog fileDialog = new org.eclipse.swt.widgets.FileDialog(shell, org.eclipse.swt.SWT.OPEN);
+		if (description != null) {
+			fileDialog.setText(description);
+		}
+		fileDialog.open();
+		String fileName = fileDialog.getFileName();
+		if (fileName == null || fileName.length() == 0) {
+			return null;
+		}
+		if (fileDialog.getFilterPath() != null) {
+			fileName = fileDialog.getFilterPath() + java.io.File.separator + fileName;
+		}
+		org.eclipse.emf.common.util.URI uri = org.eclipse.emf.common.util.URI.createFileURI(fileName);
+		org.eclipse.emf.ecore.resource.Resource resource = null;
+		try {
+			resource = editingDomain.getResourceSet().getResource(uri, true);
+		} catch (org.eclipse.emf.common.util.WrappedException we) {
+			«editorGen.plugin.getActivatorQualifiedClassName()».getInstance().logError("Unable to load resource: " + uri, we); «EXPAND xpt::Common::nonNLS»
+			org.eclipse.jface.dialogs.MessageDialog.openError(shell, 
+                «EXPAND xpt::Externalizer::accessorCall(titleKey(i18nKeyForOpenModelResourceErrorDialog(self))) FOR editorGen»,
+				org.eclipse.osgi.util.NLS.bind(
+				    «EXPAND xpt::Externalizer::accessorCall(messageKey(i18nKeyForOpenModelResourceErrorDialog(self))) FOR editorGen»,
+				    fileName));
+		}
+		return resource;
+	}
+«ENDIF»
+	/**
+	 * Runs the wizard in a dialog.
+	 * 
+	 * @generated
+	 */
+	public static void runWizard(org.eclipse.swt.widgets.Shell shell, org.eclipse.jface.wizard.Wizard wizard, String settingsKey) {
+		org.eclipse.jface.dialogs.IDialogSettings pluginDialogSettings = «editorGen.plugin.getActivatorQualifiedClassName()».getInstance().getDialogSettings();
+		org.eclipse.jface.dialogs.IDialogSettings wizardDialogSettings = pluginDialogSettings.getSection(settingsKey);
+		if (wizardDialogSettings == null) {
+			wizardDialogSettings = pluginDialogSettings.addNewSection(settingsKey);
+		}
+		wizard.setDialogSettings(wizardDialogSettings);
+		org.eclipse.jface.wizard.WizardDialog dialog = new org.eclipse.jface.wizard.WizardDialog(shell, wizard);
+		dialog.create();
+		dialog.getShell().setSize(Math.max(500, dialog.getShell().getSize().x), 500);
+		dialog.open();
+	}
+«EXPAND xpt::editor::DiagramEditorUtil::createDiagramMethod-»
+«IF domainDiagramElement <> null»
+	«EXPAND xpt::editor::DiagramEditorUtil::createInitialModelMethod»
+	«EXPAND xpt::editor::DiagramEditorUtil::attachModelMethod»
+	«IF hasDocumentRoot(self)»
+		«EXPAND xpt::editor::DiagramEditorUtil::createDocumentRootMethod»
+	«ENDIF»
+«ENDIF»
+
+«EXPAND xpt::editor::DiagramEditorUtil::selectElementsMethod»
+«EXPAND xpt::editor::DiagramEditorUtil::findElementsMethod»
+«EXPAND xpt::editor::DiagramEditorUtil::findViewMethod»
+«EXPAND initializeFromTemplate»
+
+«EXPAND xpt::editor::DiagramEditorUtil::additions»
+}
+«ENDAROUND»
+
+«AROUND openDiagramMethod FOR gmfgen::GenDiagram-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public static boolean openDiagram(org.eclipse.emf.ecore.resource.Resource diagram) throws org.eclipse.ui.PartInitException {
+«IF editorGen.application = null-»
+		String path = diagram.getURI().toPlatformString(true);
+		org.eclipse.core.resources.IResource workspaceResource = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().findMember(new org.eclipse.core.runtime.Path(path));
+		if (workspaceResource instanceof org.eclipse.core.resources.IFile) {
+			org.eclipse.ui.IWorkbenchPage page = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			return null != page.openEditor(new org.eclipse.ui.part.FileEditorInput((org.eclipse.core.resources.IFile) workspaceResource), es.cv.gvcase.mdt.common.part.MOSKittMultiPageEditor.MOSKittMultiPageEditorID);
+		}
+		return false;
+«ELSE-»
+		org.eclipse.ui.IWorkbenchPage page = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		page.openEditor(new org.eclipse.emf.common.ui.URIEditorInput(diagram.getURI()), «editorGen.editor.getQualifiedClassName()».ID);
+		return true;
+«ENDIF-»
+	}
+«ENDAROUND»
+
+«AROUND additions FOR gmfgen::GenDiagram»
+	«targetDef.proceed()»
+	«REM» fjcano :: providesFor method for the IMOSKittEditorFactory «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»	
+	public boolean providesFor(Object object) {
+		return true;
+	}
+	«REM» fjcano :: createEditorFor method for the IMOSKittEditorFactory «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public org.eclipse.ui.IEditorPart createEditorFor(Object object) {
+		return new «editorGen.editor.packageName».«editorGen.editor.className»();
+	}
+«ENDAROUND»
+
+«AROUND createDiagramMethod FOR gmfgen::GenDiagram-»
+	«EXPAND xpt::Common::generatedMemberComment((if editorGen.application = null then 'This method should be called within a workspace modify operation since it creates resources.' else '' endif))»
+	public static org.eclipse.emf.ecore.resource.Resource createDiagram(org.eclipse.emf.common.util.URI diagramURI,«IF standaloneDomainModel(self)» org.eclipse.emf.ecore.EObject model,«ENDIF» org.eclipse.core.runtime.IProgressMonitor progressMonitor) {
+		org.eclipse.emf.transaction.TransactionalEditingDomain editingDomain = org.eclipse.gmf.runtime.emf.core.GMFEditingDomainFactory.INSTANCE.createEditingDomain();
+		progressMonitor.beginTask(«EXPAND xpt::Externalizer::accessorCall(i18nKeyForCreateDiagramProgressTask(self)) FOR editorGen», 3);
+		final org.eclipse.emf.ecore.resource.Resource diagramResource = editingDomain.getResourceSet().createResource(diagramURI);
+«IF domainDiagramElement <> null and hasDocumentRoot(self) /*for standalone models, we assume its resourcefactory would be able to set extendedMetaData option*/-»
+		((org.eclipse.emf.ecore.xmi.XMLResource) diagramResource).getDefaultSaveOptions().put(org.eclipse.emf.ecore.xmi.XMLResource.OPTION_EXTENDED_META_DATA, Boolean.TRUE);
+		((org.eclipse.emf.ecore.xmi.XMLResource) diagramResource).getDefaultLoadOptions().put(org.eclipse.emf.ecore.xmi.XMLResource.OPTION_EXTENDED_META_DATA, Boolean.TRUE);
+«ENDIF-»
+		final String diagramName = diagramURI.lastSegment();
+		final org.eclipse.emf.ecore.EObject modelElement = model;
+		org.eclipse.gmf.runtime.emf.commands.core.command.AbstractTransactionalCommand command = new org.eclipse.gmf.runtime.emf.commands.core.command.AbstractTransactionalCommand(editingDomain, «EXPAND xpt::Externalizer::accessorCall(i18nKeyForCreateDiagramCommandLabel(self)) FOR editorGen», java.util.Collections.EMPTY_LIST) {
+			protected org.eclipse.gmf.runtime.common.core.command.CommandResult doExecuteWithResult(org.eclipse.core.runtime.IProgressMonitor monitor, org.eclipse.core.runtime.IAdaptable info) throws org.eclipse.core.commands.ExecutionException {
+			
+				org.eclipse.gmf.runtime.notation.Diagram diagram = org.eclipse.gmf.runtime.diagram.core.services.ViewService.createDiagram(
+«IF domainDiagramElement <> null-»
+				«EXPAND MetaModel::DowncastToEObject('modelElement') FOR domainDiagramElement», 
+«ENDIF-»
+				«EXPAND xpt::editor::VisualIDRegistry::modelID», «EXPAND xpt::plugin::Activator::preferenceHintAccess FOR editorGen»);
+				if (diagram != null) {
+					diagramResource.getContents().add(diagram);
+					diagram.setName(diagramName);
+«IF domainDiagramElement <> null-»
+					diagram.setElement(«EXPAND MetaModel::DowncastToEObject('modelElement') FOR domainDiagramElement»);
+«ENDIF-»
+					«REM»Added by gmerin [Diagram Version]«ENDREM»
+					// This will add the version of the editor that will edit the diagram
+					es.cv.gvcase.mdt.common.util.MDTUtil.addDiagramVersion(diagram, es.cv.gvcase.mdt.common.util.MDTUtil
+							.getBundleVersion(«editorGen.plugin.getActivatorQualifiedClassName()».ID));
+				}
+				
+				try {
+					diagramResource.save(«EXPAND xpt::Common::getSaveOptions»);
+				} catch (java.io.IOException e) {
+					«/* TODO CommandResult.newErrorCommandResult(e) would be better? Or even throw ExecutionEx?*/»
+					«editorGen.plugin.getActivatorQualifiedClassName()».getInstance().logError("Unable to store model and diagram resources", e); «EXPAND xpt::Common::nonNLS»
+				}
+				return org.eclipse.gmf.runtime.common.core.command.CommandResult.newOKCommandResult();
+			}
+		};
+		try {
+			org.eclipse.core.commands.operations.OperationHistoryFactory.getOperationHistory().execute(command, new org.eclipse.core.runtime.SubProgressMonitor(progressMonitor, 1), null);
+		} catch (org.eclipse.core.commands.ExecutionException e) {
+			«editorGen.plugin.getActivatorQualifiedClassName()».getInstance().logError("Unable to create model and diagram", e); «EXPAND xpt::Common::nonNLS»
+		}
+«IF editorGen.application = null-»
+		setCharset(org.eclipse.emf.workspace.util.WorkspaceSynchronizer.getFile(diagramResource));
+«ENDIF-»
+		return diagramResource;
+	}
+«ENDAROUND»
+
+«DEFINE initializeFromTemplate FOR gmfgen::GenDiagram»
+	«EXPAND xpt::Common::generatedMemberComment»
+		public static org.eclipse.emf.ecore.resource.Resource initializeFromTemplate(org.eclipse.emf.common.util.URI newFileURI,
+			String pluginId, String templatePath) {
+
+		try {
+			// Open the template as an stream
+			java.io.InputStream templateInputStream = null;
+			java.net.URL templateURL = org.eclipse.core.runtime.Platform.getBundle(pluginId)
+					.getResource(templatePath);
+			templateInputStream = templateURL.openStream();
+
+			// Create the new file and initialize it with the template stream
+			org.eclipse.core.runtime.IPath path = new org.eclipse.core.runtime.Path(newFileURI.toPlatformString(false));
+			org.eclipse.core.resources.IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+			file.create(templateInputStream, org.eclipse.core.resources.IResource.NONE, null);
+
+		} catch (java.io.IOException e) {
+			org.eclipse.gmf.runtime.common.core.util.Log.error(null, 0, "IO Exception", e);
+			return null;
+		} catch (org.eclipse.core.runtime.CoreException e) {
+			org.eclipse.gmf.runtime.common.core.util.Log.error(null, 0, "Core Exception", e);
+			return null;
+		}
+
+		// Load the file as a resource
+		org.eclipse.emf.ecore.resource.ResourceSet resSet = new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl(); // Create a new resource set
+		org.eclipse.emf.ecore.resource.Resource modelResource = resSet.getResource(newFileURI, true); // Gets the resource
+
+		return modelResource;
+	}
+«ENDDEFINE»
+
+«DEFINE createModel FOR gmfgen::GenDiagram»
+	«EXPAND xpt::Common::generatedMemberComment»
+		public static org.eclipse.emf.ecore.resource.Resource createModel(org.eclipse.emf.common.util.URI modelURI, org.eclipse.core.runtime.IProgressMonitor progressMonitor) {
+		org.eclipse.emf.transaction.TransactionalEditingDomain editingDomain = org.eclipse.gmf.runtime.emf.core.GMFEditingDomainFactory.INSTANCE
+				.createEditingDomain();
+		progressMonitor.beginTask("Create Model", 1);
+
+		final org.eclipse.emf.ecore.resource.Resource modelResource = editingDomain.getResourceSet()
+				.createResource(modelURI);
+
+		org.eclipse.gmf.runtime.emf.commands.core.command.AbstractTransactionalCommand command = new org.eclipse.gmf.runtime.emf.commands.core.command.AbstractTransactionalCommand(
+				editingDomain, "Create Model", java.util.Collections.EMPTY_LIST) {
+			@Override
+			protected org.eclipse.gmf.runtime.common.core.command.CommandResult doExecuteWithResult(
+					org.eclipse.core.runtime.IProgressMonitor monitor, org.eclipse.core.runtime.IAdaptable info)
+					throws org.eclipse.core.commands.ExecutionException {
+
+				«EXPAND MetaModel::QualifiedClassName FOR domainDiagramElement» model = createInitialModel();
+
+				// attaching model will import default elements
+				// those imported elements must be included in the EAnnotation
+				// that references elements to be shown
+				attachModelToResource(model, modelResource);
+
+				try {
+					modelResource.save(getSaveOptions());
+				} catch (java.io.IOException e) {
+					org.eclipse.gmf.runtime.common.core.util.Log.error(null, 0, "Unable to store modelresource", e);
+				}
+
+				return org.eclipse.gmf.runtime.common.core.command.CommandResult.newOKCommandResult();
+			}
+		};
+
+		try {
+			org.eclipse.core.commands.operations.OperationHistoryFactory.getOperationHistory().execute(command,
+					new org.eclipse.core.runtime.SubProgressMonitor(progressMonitor, 1), null);
+		} catch (org.eclipse.core.commands.ExecutionException e) {
+			org.eclipse.gmf.runtime.common.core.util.Log.error(null, 0, "Unable to create model", e);
+		}
+
+		setCharset(org.eclipse.emf.workspace.util.WorkspaceSynchronizer.getFile(modelResource));
+
+		return modelResource;
+	}
+
+«ENDDEFINE»
+
+«AROUND createInitialModelMethod FOR gmfgen::GenDiagram»
+	«EXPAND xpt::Common::generatedMemberComment('Create a new instance of domain element associated with canvas.\n<!-- begin-user-doc -->\n<!-- end-user-doc -->')»
+	private static «EXPAND MetaModel::QualifiedClassName FOR domainDiagramElement» createInitialModel() {
+		«EXPAND MetaModel::QualifiedClassName FOR domainDiagramElement» model = «EXPAND MetaModel::NewInstance FOR domainDiagramElement»;
+		model = («EXPAND MetaModel::QualifiedClassName FOR domainDiagramElement») es.cv.gvcase.mdt.common.model.ModelInitializerRegistry.getInstance().init(
+				«EXPAND xpt::editor::VisualIDRegistry::modelID», model);
+		return model;
+	}
+«ENDAROUND»

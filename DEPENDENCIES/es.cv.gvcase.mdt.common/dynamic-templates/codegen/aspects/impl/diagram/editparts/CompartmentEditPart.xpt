@@ -1,0 +1,118 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/Ecore'»
+«IMPORT 'http://es.cv.gvcase.mdt.common.gmfextension.appearance'»«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«EXTENSION xpt::diagram::editparts::Utils»
+«EXTENSION gmf::EMFUtils»«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«EXTENSION aspects::diagram::editparts::editPartsUtils»
+
+«AROUND createDefaultEditPoliciesBody FOR gmfgen::GenCompartment-»
+	super.createDefaultEditPolicies();
+	«IF canCollapse-»
+		installEditPolicy(org.eclipse.gef.EditPolicy.PRIMARY_DRAG_ROLE, new org.eclipse.gmf.runtime.diagram.ui.editpolicies.ResizableCompartmentEditPolicy());
+	«ENDIF-»
+	«EXPAND xpt::diagram::editparts::Common::installSemanticEditPolicy-»
+	«IF childNodes->size() > 0-»
+		installEditPolicy(org.eclipse.gmf.runtime.diagram.ui.editpolicies.EditPolicyRoles.CREATION_ROLE, new org.eclipse.gmf.runtime.diagram.ui.editpolicies.CreationEditPolicy());
+		«IF not childNodes->isEmpty()-»
+		es.cv.gvcase.mdt.common.edit.policies.DragDropEditPolicy dragAndDropEditPolicy = null;
+		«IF listLayout-»
+		dragAndDropEditPolicy = new es.cv.gvcase.mdt.common.edit.policies.ListDragDropEditPolicy(«getViewAndFeatureResolverDeclarationName()»);
+		«ELSE-»
+		dragAndDropEditPolicy = new es.cv.gvcase.mdt.common.edit.policies.DragDropEditPolicy(«getViewAndFeatureResolverDeclarationName()»);
+		«ENDIF-»
+		installEditPolicy(org.eclipse.gmf.runtime.diagram.ui.editpolicies.EditPolicyRoles.DRAG_DROP_ROLE, dragAndDropEditPolicy);
+	«ENDIF-»
+	«ENDIF-»
+	«EXPAND xpt::diagram::editparts::Common::installCanonicalEditPolicy-»
+	«IF listLayout-»
+	installEditPolicy(es.cv.gvcase.mdt.common.edit.policies.EditPolicyRoles.DUPLICATE_ROLE, new es.cv.gvcase.mdt.common.edit.policies.DuplicateEditPolicy());«REM»Added by Mario Cervera«ENDREM»
+	«ENDIF-»
+	«IF listLayout-»
+		«IF isSameContainmentFeature(childNodes)-»
+	// Add a policy used to reorder children
+	installEditPolicy(org.eclipse.gef.EditPolicy.LAYOUT_ROLE,
+				new es.cv.gvcase.mdt.common.edit.policies.ReorderingCompartmentEditPolicy(
+					«EXPAND getFeature FOR childNodes->first()»
+				));
+		«ENDIF-»
+	«ENDIF-»
+	«EXPAND xpt::diagram::editparts::Common::behaviour-»
+«ENDAROUND»
+
+«DEFINE getFeature FOR gmfgen::GenNode-»
+	«EXPAND MetaModel::MetaFeature FOR modelFacet.containmentMetaFeature-»;
+«ENDDEFINE»
+
+«AROUND handleNotificationEventBody FOR gmfgen::GenCompartment-»
+	super.handleNotificationEvent(notification);
+	«EXPAND handleNotificationAppearance-»
+	Object feature = notification.getFeature();
+	if (es.cv.gvcase.mdt.common.util.MDTUtil.isEventAppearanceNotification(notification)) {
+		refreshBounds();
+	} 
+	
+	// mgil:: if the notification is for ADD an element and the element is
+	// an Edge, don't refresh the Diagram to avoid duplicated Links
+	if (notification.getEventType() == org.eclipse.emf.common.notify.Notification.ADD
+			&& «diagram.editorGen.editor.packageName».«diagram.visualIDRegistryClassName»
+						.«EXPAND xpt::editor::VisualIDRegistry::getLinkWithClassVisualIDMethodName FOR diagram»((org.eclipse.emf.ecore.EObject) notification
+								.getNewValue()) > -1) {
+		return;
+	} else {
+		java.util.List<org.eclipse.emf.ecore.EStructuralFeature> features = new java.util.ArrayList<org.eclipse.emf.ecore.EStructuralFeature>();
+		«EXPAND searchFeaturesForSemanticChange FOREACH childNodes-»
+		es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.handleNotificationForView(this, notification, features);
+	}
+	// mgil:: end
+«ENDAROUND»
+
+«DEFINE handleNotificationEventBody2 FOR gmfgen::GenCompartment-»
+	super.handleNotificationEvent(notification);
+	«EXPAND handleNotificationAppearance-»
+	
+	// mgil:: if the notification is for ADD an element and the element is
+	// an Edge, don't refresh the Diagram to avoid duplicated Links
+	if (notification.getEventType() == org.eclipse.emf.common.notify.Notification.ADD
+			&& «diagram.editorGen.editor.packageName».«diagram.visualIDRegistryClassName»
+						.«EXPAND xpt::editor::VisualIDRegistry::getLinkWithClassVisualIDMethodName FOR diagram»((org.eclipse.emf.ecore.EObject) notification
+								.getNewValue()) > -1) {
+		return;
+	} else {
+		java.util.List<org.eclipse.emf.ecore.EStructuralFeature> features = new java.util.ArrayList<org.eclipse.emf.ecore.EStructuralFeature>();
+		«EXPAND searchFeaturesForSemanticChange FOREACH childNodes-»
+		es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.handleNotificationForView(this, notification, features);
+	}
+	// mgil:: end
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE handleNotificationAppearance FOR gmfgen::GenCompartment-»
+		if (notification.getNotifier() instanceof org.eclipse.gmf.runtime.notation.ShapeStyle) {
+			«LET getReferencingObjects(self.oclAsType(ecore::EObject))[appearance::CustomElement] AS customElements-»
+				«IF customElements->size() = 0 or customElements->size() > 1-»
+					«EXPAND aspects::impl::diagram::editparts::NodeEditPart::propagateStyleChanges(false)-»
+				«ELSEIF customElements->size() = 1-»
+					«LET customElements.oclAsType(appearance::CustomElement)->first() AS cElement-»
+						«EXPAND aspects::impl::diagram::editparts::NodeEditPart::propagateStyleChanges(cElement.propagateStyle)-»
+					«ENDLET»
+				«ENDIF»
+			«ENDLET»
+		}
+«ENDDEFINE»
+
+«DEFINE searchFeaturesForSemanticChange FOR gmfgen::GenNode-»
+	features.add(«EXPAND MetaModel::MetaFeature FOR modelFacet.containmentMetaFeature»);
+«ENDDEFINE»

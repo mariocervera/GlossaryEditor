@@ -1,0 +1,241 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="es.cv.gvcase.mdt.common" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="es.cv.gvcase.mdt.common" id="spatialDomain" name="spatialDomain"/>
+      </appInfo>
+      <documentation>
+         [Entrar descripcion de este punto de extension.]
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+         <documentation>
+            This extension defines new domains allowing add new data types describing properties with their allowed values into Moskitt.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="TypesGroup" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Type">
+      <annotation>
+         <documentation>
+            Describes new declared diagram type.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="Property" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="typeID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Property">
+      <annotation>
+         <documentation>
+            Describes a new property included in a described type, this property allow values of basic types.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="AvailableValue" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="propertyID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="type">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="String">
+                  </enumeration>
+                  <enumeration value="Integer">
+                  </enumeration>
+                  <enumeration value="Double">
+                  </enumeration>
+                  <enumeration value="Date">
+                  </enumeration>
+                  <enumeration value="Boolean">
+                  </enumeration>
+               </restriction>
+            </simpleType>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="AvailableValue">
+      <annotation>
+         <documentation>
+            Describes values allowed that properties can take.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="value" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="TypesGroup">
+      <annotation>
+         <documentation>
+            Describes a new group of types.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="Type" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="Editor" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="typesGroupID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="defaultSelected" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Editor">
+      <complexType>
+         <attribute name="editorID" type="string">
+            <annotation>
+               <documentation>
+                  The editor identifier, as defined in the org.eclipse.ui.editors extension point.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         [Especificar el primer release en el que aparece este punto de extensiÃ³n.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         [Especificar aquÃ­ un ejemplo de utilizaciÃ³n del punto de extensiÃ³n.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="apiinfo"/>
+      </appInfo>
+      <documentation>
+         [Especificar aquÃ­ informaciÃ³n sobre las API]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         [Especificar informaciÃ³n sobre la implementaciÃ³n suministrada de este punto de extensiÃ³n]
+      </documentation>
+   </annotation>
+
+
+</schema>

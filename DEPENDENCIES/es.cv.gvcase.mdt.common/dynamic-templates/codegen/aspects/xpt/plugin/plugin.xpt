@@ -1,0 +1,249 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::diagram::Utils»
+«EXTENSION xpt::GenEditorGenerator»
+«EXTENSION aspects::xpt::plugin::ViewInfoUtils»
+
+«AROUND menu FOR gmfgen::GenPlugin-»
+   <extension point="org.eclipse.gmf.runtime.common.ui.services.action.globalActionHandlerProviders">
+      «EXPAND xpt::Common::xmlGeneratedTag»
+      <GlobalActionHandlerProvider
+         class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramGlobalActionHandlerProvider"
+         id="«editorGen.modelID»Presentation">
+         <Priority name="Lowest"/>
+         <ViewId id="«editorGen.editor.iD»">
+            <ElementType class="org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart">
+               <GlobalActionId actionId="delete"/>
+            </ElementType>
+            <ElementType class="org.eclipse.gmf.runtime.diagram.ui.editparts.DiagramEditPart">
+               <GlobalActionId actionId="save"/>
+            </ElementType>
+         </ViewId>
+      </GlobalActionHandlerProvider>
+«IF printingEnabled-»
+      <GlobalActionHandlerProvider
+      	«REM» fjcano :: MOSkitt common printing handler «ENDREM»
+         class="es.cv.gvcase.mdt.common.actions.DiagramWithPrintGlobalActionHandlerProvider"
+         id="«editorGen.modelID»PresentationPrint">
+         <Priority name="Lowest"/>
+         <ViewId id="«editorGen.editor.iD»">
+            <ElementType class="org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart">
+               <GlobalActionId actionId="print"/>
+            </ElementType>
+         </ViewId>
+      </GlobalActionHandlerProvider>
+«ENDIF-»
+«IF null = editorGen.application-»
+      <GlobalActionHandlerProvider
+         class="org.eclipse.gmf.runtime.diagram.ui.providers.ide.providers.DiagramIDEGlobalActionHandlerProvider"
+         id="«editorGen.modelID»PresentationIDE">
+         <Priority name="Lowest"/>
+         <ViewId id="«editorGen.editor.iD»">
+            <ElementType class="org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart">
+               <GlobalActionId actionId="bookmark"/>
+            </ElementType>
+         </ViewId>
+      </GlobalActionHandlerProvider>
+   </extension>
+      «REM»This contributes the copy/paste handler for the diagram to the
+      MDT-common provider that provides the workbench of the copy/paste actions«ENDREM»
+   <extension
+   		point="es.cv.gvcase.mdt.common.clipboardhandlers">
+   		<ClipboardHandler
+				clipboardhandlerClass="es.cv.gvcase.mdt.common.actions.handlers.ClipboardActionHandler"
+				modelID="«editorGen.modelID»">
+   		</ClipboardHandler>
+   </extension>
+«ENDIF-»
+«ENDAROUND»
+
+«DEFINE metrics FOR gmfgen::GenMetricContainer-»
+«IF metrics.size() > 0-»
+
+	<extension id="MetricContributionItemProvider" name="Metrics"
+		point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+        «EXPAND xpt::Common::xmlGeneratedTag»
+		<contributionItemProvider checkPluginLoaded="true" class="«editorGen.diagram.getMetricProviderQualifiedClassName()»">
+			<Priority name="«editorGen.diagram.metricProviderPriority»"/>		
+			<partContribution id="«editorGen.editor.iD»">
+				<partMenuGroup menubarPath="/diagramMenu/" id="validationGroup"/>
+				<partAction id="metricsAction" menubarPath="/diagramMenu/validationGroup"/>
+			</partContribution>		
+		</contributionItemProvider>
+	</extension>
+
+   <extension id="metrics-view" point="org.eclipse.ui.views">
+      «EXPAND xpt::Common::xmlGeneratedTag»
+   	  <view class="«editorGen.diagram.getMetricProviderQualifiedClassName()»$ResultView"
+			id="«editorGen.diagram.getMetricViewID()»"
+			name="«editorGen.modelID» Diagram Metrics"/>
+   </extension>
+«ENDIF-»
+«ENDDEFINE»
+
+«AROUND additions FOR gmfgen::GenPlugin»
+	«targetDef.proceed()»
+	«REM» fjcano :: [Model2Editor] model to editor registry «ENDREM»
+	<extension
+		point="es.cv.gvcase.mdt.common.modelToEditorMap">
+		«EXPAND xpt::Common::xmlGeneratedTag»
+		<modelToEditor
+			editorID="«editorGen.editor.iD»"
+			modelID="«editorGen.modelID»"
+			label="«editorGen.editor.iD»">
+		</modelToEditor>
+	</extension>
+	«REM» fjcano :: [ViewInfo] build the ViewInfo structure in the extension point «ENDREM»
+	<extension point="es.cv.gvcase.mdt.common.viewInfo">
+		«EXPAND xpt::Common::xmlGeneratedTag»
+		<RootViewInfo
+			editorID="«editorGen.editor.iD»"
+			modelTypes="es.cv.gvcase.mdt.common.provider.ModelTypesProviderFactory">
+			«EXPAND addViewInfo FOR editorGen.diagram-»
+		</RootViewInfo>
+	</extension>
+	«REM» fjcano :: [Model2Editor] model to editor editor factory registry «ENDREM»
+	<extension
+		point="es.cv.gvcase.mdt.common.moskittEditorFactory">
+		«EXPAND xpt::Common::xmlGeneratedTag»
+		<MOSKittEditorFactory
+			diagramType="«editorGen.modelID»"
+			editorID="«editorGen.editor.iD»"
+			factory="«editorGen.editor.packageName».«editorGen.diagram.diagramEditorUtilClassName»">
+		</MOSKittEditorFactory>
+	</extension>
+«ENDAROUND»
+
+«DEFINE addViewInfo FOR gmfgen::GenDiagram»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+		<BaseViewInfo
+			elementType="«elementType.uniqueIdentifier»"
+			label="%viewInfo.«visualID»"
+			type="Head"
+			visualID="«visualID»">
+		</BaseViewInfo>
+	«REM» Expand top level nodes «ENDREM»«-»
+	«EXPAND addViewInfo(visualID) FOREACH topLevelNodes-»
+	«REM» Expand all children «ENDREM»«-»
+	«EXPAND addViewInfo FOREACH childNodes-»
+	«REM» Expand links «ENDREM»«-»
+	«EXPAND addViewInfo(visualID) FOREACH links-»
+«ENDDEFINE»
+
+«DEFINE addViewInfo FOR gmfgen::GenChildNode»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+	«FOREACH containers AS container-»
+		«EXPAND addViewInfo(container) FOR self-»
+	«ENDFOREACH-»
+«ENDDEFINE»
+
+«DEFINE addViewInfo(Integer parentID) FOR gmfgen::GenTopLevelNode»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+		<BaseViewInfo
+			elementType="«elementType.uniqueIdentifier»"
+			label="%viewInfo.«visualID»"
+			parent="«parentID»"
+			type="Node"
+			visualID="«visualID»">
+		</BaseViewInfo>
+		«REM» Expand all labels «ENDREM»«-»
+		«EXPAND addViewInfo(visualID) FOREACH labels-»
+«ENDDEFINE»
+
+«DEFINE addViewInfo(gmfgen::GenChildContainer parent) FOR gmfgen::GenCommonBase»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+		<BaseViewInfo
+			elementType="«elementType.uniqueIdentifier»"
+			label="%viewInfo.«visualID»"
+			parent="«parent.visualID»"
+			type="Node"
+			visualID="«visualID»">
+		</BaseViewInfo>
+«ENDDEFINE»
+
+«DEFINE addViewInfo(gmfgen::GenCompartment compartment) FOR gmfgen::GenCommonBase»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+	«FOREACH compartment.diagram.topLevelNodes AS topLevelNode-»
+		«FOREACH topLevelNode.compartments AS container-»
+			«IF container.visualID = compartment.visualID-»
+				<BaseViewInfo
+					elementType="«elementType.uniqueIdentifier»"
+					label="%viewInfo.«visualID»"
+					parent="«topLevelNode.visualID»"
+					type="Node"
+					visualID="«visualID»">
+				</BaseViewInfo>
+			«ENDIF-»
+		«ENDFOREACH-»
+	«ENDFOREACH-»
+	«FOREACH compartment.diagram.childNodes AS childNode-»
+		«FOREACH childNode.compartments AS container-»
+			«IF container.visualID = compartment.visualID-»
+				<BaseViewInfo
+					elementType="«elementType.uniqueIdentifier»"
+					label="%viewInfo.«visualID»"
+					parent="«childNode.visualID»"
+					type="Node"
+					visualID="«visualID»">
+				</BaseViewInfo>
+			«ENDIF-»
+		«ENDFOREACH-»
+	«ENDFOREACH-»
+«ENDDEFINE»
+
+«DEFINE addViewInfo(Integer parentID) FOR gmfgen::GenLink»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+		<BaseViewInfo
+			elementType="«elementType.uniqueIdentifier»"
+			label="%viewInfo.«visualID»"
+			parent="«parentID»"
+			type="Edge"
+			visualID="«visualID»">
+		</BaseViewInfo>
+		«REM» Expand all labels «ENDREM»«-»
+		«EXPAND addViewInfo(visualID) FOREACH labels-»
+«ENDDEFINE»
+
+«DEFINE addViewInfo(Integer parentID) FOR gmfgen::GenChildLabelNode»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+		<BaseViewInfo
+			elementType="«elementType.uniqueIdentifier»"
+			label="%viewInfo.«visualID»"
+			parent="«parentID»"
+			type="Edge"
+			visualID="«visualID»">
+		</BaseViewInfo>
+		«REM» Expand all labels «ENDREM»«-»
+		«EXPAND addViewInfo(visualID) FOREACH labels-»
+«ENDDEFINE»
+
+«DEFINE addViewInfo(Integer parentID) FOR gmfgen::GenLinkLabel»
+	«REM» fjcano :: [ViewInfo] «ENDREM»
+		<BaseViewInfo
+			elementType="«getChildNodeLabelElementTypeIdentifier(self)»"
+			label="%viewInfo.«visualID»"
+			parent="«parentID»"
+			type="Label"
+			visualID="«visualID»">
+		</BaseViewInfo>
+«ENDDEFINE»
+
+«DEFINE addViewInfo(Integer parentID) FOR gmfgen::GenNodeLabel»
+	«REM» [ViewInfo] no view info needed for a GenNodeLabel «ENDREM»
+«ENDDEFINE»
+
+«DEFINE addViewInfo(Integer parentID) FOR gmfgen::GenLabel»
+	«REM» [ViewInfo] no view info needed for a GenNodeLabel «ENDREM»
+«ENDDEFINE»

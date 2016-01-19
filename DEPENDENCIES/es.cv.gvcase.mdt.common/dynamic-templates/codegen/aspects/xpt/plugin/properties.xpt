@@ -1,0 +1,115 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::diagram::Utils»
+«EXTENSION aspects::xpt::plugin::ViewInfoUtils»
+
+«AROUND properties FOR gmfgen::GenPlugin-»
+pluginName=«name»
+providerName=«provider»
+
+preferences.general=«editorGen.modelID» Diagram
+preferences.appearance=Appearance
+preferences.connections=Connections
+preferences.printing=Printing
+preferences.rulersAndGrid=Rulers & Grid
+preferences.pathmaps=Path Maps
+
+editorName=«editorGen.modelID» MOSKitt Diagram Editing
+context.description=«editorGen.modelID» Diagram Editing
+context.name=In «editorGen.modelID» MOSKitt Diagram Editor
+newWizardName=«editorGen.modelID» MOSKitt Diagram
+newWizardDesc=Creates «editorGen.modelID» MOSKitt diagram.
+
+«IF editorGen.diagram.generateInitDiagramAction()-»
+initDiagramActionLabel=Initialize MOSKitt «editorGen.diagramFileExtension» diagram file
+«ENDIF-»
+«IF editorGen.diagram.generateCreateShortcutAction()-»
+createShortcutActionLabel=Create Shortcut...
+«ENDIF-»
+loadResourceActionLabel=Load Resource...
+
+«IF null != editorGen.application-»
+perspectiveName=«editorGen.modelID» Perspective
+applicationActionSetLabel=<«editorGen.modelID» Actions
+newDiagramActionLabel=«editorGen.modelID» MOSKitt Diagram
+aboutActionLabel=«editorGen.modelID» MOSKitt Diagram About...
+openURIActionLabel=Open URI...
+openURIActionDescription=Open file by URI
+openActionLabel=Open...
+openActionDescription=Open file
+«ENDIF-»
+
+navigatorContentName=*.«editorGen.diagramFileExtension» diagram contents
+«IF null <> editorGen.navigator and editorGen.navigator.generateDomainModelNavigator-»
+domainNavigatorContentName=*.«editorGen.domainFileExtension» model contents
+«ENDIF-»
+update.diagram.name=Update «editorGen.modelID» diagram
+update.diagram.description=Perform «editorGen.modelID» diagram update
+
+«EXPAND xpt::propsheet::extensions::i18n FOR editorGen.propertySheet-»
+«EXPAND xpt::diagram::preferences::extensions::i18n FOR editorGen.diagram-»
+«EXPAND xpt::providers::extensions::i18n FOR editorGen.diagram-»
+
+
+«REM» fjcano :: [ViewInfo] labels for ViewInfo elements.
+      They appear here so that they can be easily translated. «ENDREM»
+# Labels for ViewInfo elements. They appear here so that they can be easily translated.
+«EXPAND addViewInfoLabels FOR editorGen.diagram»
+«ENDAROUND»
+
+«DEFINE addViewInfoLabels FOR gmfgen::GenDiagram»
+«REM» fjcano :: [ViewInfo] Add labels for all elements that will appear
+      in the extension point an in the filter views dialog «ENDREM»
+viewInfo.«visualID»=«elementType.displayName»
+«REM» fjcano :: Expand topLevelNodes «ENDREM»
+«EXPAND addViewInfo FOREACH topLevelNodes»
+«REM» fjcano :: Expand childNodes «ENDREM»
+«EXPAND addViewInfo FOREACH childNodes»
+«REM» fjcano :: Expand links «ENDREM»
+«EXPAND addViewInfo FOREACH links»
+«ENDDEFINE»
+
+«DEFINE addViewInfo FOR gmfgen::GenChildNode»
+viewInfo.«visualID»=«elementType.displayName»
+«REM» fjcano :: Expand childNodes «ENDREM»
+«EXPAND addViewInfo FOREACH childNodes»
+«REM» fjcano :: Expand labels «ENDREM»
+«EXPAND addViewInfo FOREACH labels»
+«ENDDEFINE»
+
+«DEFINE addViewInfo FOR gmfgen::GenTopLevelNode»
+viewInfo.«visualID»=«elementType.displayName»
+«REM» fjcano :: Expand childNodes «ENDREM»
+«EXPAND addViewInfo FOREACH childNodes»
+«REM» fjcano :: Expand labels «ENDREM»
+«EXPAND addViewInfo FOREACH labels»
+«ENDDEFINE»
+
+«DEFINE addViewInfo FOR gmfgen::GenLink»
+viewInfo.«visualID»=«elementType.displayName»
+«REM» fjcano :: Expand labels «ENDREM»
+«EXPAND addViewInfo FOREACH labels»
+«ENDDEFINE»
+
+«DEFINE addViewInfo FOR gmfgen::GenChildLabelNode»
+viewInfo.«visualID»=«modelFacetToString(labelModelFacet, self)»
+«ENDDEFINE»
+
+«DEFINE addViewInfo FOR gmfgen::GenLabel»
+«IF modelFacet != null»
+viewInfo.«visualID»=«modelFacetToString(modelFacet, self)»
+«ENDIF»
+«ENDDEFINE»
+

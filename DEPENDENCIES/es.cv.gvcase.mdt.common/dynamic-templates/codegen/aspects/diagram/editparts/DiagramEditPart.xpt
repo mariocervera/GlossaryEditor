@@ -1,0 +1,105 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION aspects::diagram::editparts::editPartsUtils»
+
+«DEFINE extendsList FOR gmfgen::GenDiagram»extends es.cv.gvcase.mdt.common.diagram.editparts.DiagramEditPart«ENDDEFINE»
+
+«DEFINE viewResolver FOR gmfgen::GenDiagram-»
+	«EXPAND xpt::Common::generatedMemberComment-»
+	private es.cv.gvcase.mdt.common.edit.policies.ViewAndFeatureResolver «getViewAndFeatureResolverDeclarationName()» = new es.cv.gvcase.mdt.common.edit.policies.ViewAndFeatureResolver() {
+
+		public boolean isEObjectNode(org.eclipse.emf.ecore.EObject element) {
+			if («editorGen.editor.packageName».«visualIDRegistryClassName».getNodeVisualID(getNotationView(),
+					element) > -1) {
+				return true;
+			}
+			return false;
+		}
+
+		public boolean isEObjectLink(org.eclipse.emf.ecore.EObject element) {
+			if («editorGen.editor.packageName».«visualIDRegistryClassName».getLinkWithClassVisualID(element) > -1) {
+				return true;
+			}
+			return false;
+		}
+		
+		public int getEObjectSemanticHint(org.eclipse.emf.ecore.EObject element) {
+			if (element != null) {
+				return «editorGen.editor.packageName».«visualIDRegistryClassName».getNodeVisualID(getNotationView(),
+					element);
+			}
+			return -1;
+		}
+		
+		public org.eclipse.emf.ecore.EStructuralFeature getEStructuralFeatureForEClass(org.eclipse.emf.ecore.EClass class1) {
+			«FOREACH topLevelNodes AS childNode-»
+			«EXPAND featureForMetaclass FOR childNode-»
+			«ENDFOREACH-»
+			return null;
+		}
+ 	};
+«ENDDEFINE»
+
+«DEFINE featureForMetaclass FOR gmfgen::GenNode-»
+		if («EXPAND MetaModel::MetaClass FOR modelFacet.metaClass».equals(class1)) {
+			return «EXPAND MetaModel::MetaFeature FOR modelFacet.containmentMetaFeature»;
+		}
+«ENDDEFINE»
+
+«DEFINE getAdapter FOR gmfgen::GenDiagram»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public Object getAdapter(Class adapter) {
+		if (adapter != null && adapter.equals(es.cv.gvcase.mdt.common.edit.policies.ViewAndFeatureResolver.class)) {
+			return this.«getViewAndFeatureResolverDeclarationName()»;
+		}
+		«REM» [ViewInfo] return a ViewInfo with info about the views in this diagram «ENDREM»
+		if (adapter != null && adapter.equals(es.cv.gvcase.mdt.common.provider.ViewInfo.class)) {
+			return «editorGen.editor.packageName».«visualIDRegistryClassName».getDiagramViewInfo();
+		}
+		if (es.cv.gvcase.mdt.common.provider.IDiagramLinksViewInfo.class.equals(adapter)) {
+			return «editorGen.editor.packageName».«editorGen.diagramUpdater.diagramUpdaterClassName».getDiagramLinksViewInfo();
+		}
+		return super.getAdapter(adapter);
+	}
+«ENDDEFINE»
+
+«DEFINE handleNotificationEvent FOR gmfgen::GenDiagram»
+	«EXPAND xpt::Common::generatedMemberComment-»
+	protected void handleNotificationEvent(org.eclipse.emf.common.notify.Notification event) {
+		super.handleNotificationEvent(event);
+		«EXPAND handleNotificationEventViewInfoBody»
+	}
+«ENDDEFINE»
+
+«DEFINE handleNotificationEventViewInfoBody FOR gmfgen::GenDiagram»
+		«REM» [ViewInfo] to update the diagram when filtering Views by type «ENDREM»
+		es.cv.gvcase.mdt.common.util.MDTUtil.handleViewInfoNotification(event, this);
+
+		if (event.getNotifier() instanceof org.eclipse.emf.ecore.EAnnotation) {
+			org.eclipse.emf.ecore.EAnnotation eAnnotation = (org.eclipse.emf.ecore.EAnnotation) event.getNotifier();
+			if (eAnnotation.getSource() != null
+					&& eAnnotation.getSource().equals(
+							es.cv.gvcase.mdt.common.util.MDTUtil.FilterViewAndLabelsSource)) {
+				es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.updateDiagram(this);
+			}
+		}
+«ENDDEFINE»
+
+«AROUND additions FOR gmfgen::GenDiagram»
+	«EXPAND viewResolver-»
+	«EXPAND getAdapter-»
+	«EXPAND handleNotificationEvent-»
+«ENDAROUND»

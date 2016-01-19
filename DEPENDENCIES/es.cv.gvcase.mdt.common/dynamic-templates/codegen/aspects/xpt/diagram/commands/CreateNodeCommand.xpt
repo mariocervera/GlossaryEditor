@@ -1,0 +1,122 @@
+/*
+ * Copyright (c) 2007, 2008 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::diagram::Utils»
+«EXTENSION MetaModel»
+
+«AROUND CreateNodeCommand FOR gmfgen::GenNode-»
+«EXPAND xpt::Common::copyright FOR getDiagram().editorGen-»
+package «getDiagram().editCommandsPackageName»;
+
+«EXPAND xpt::Common::generatedClassComment»
+public class «createCommandClassName» extends org.eclipse.gmf.runtime.emf.type.core.commands.EditElementCommand {
+	«REM» Mutating canvas auxiliary «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment-»
+	private org.eclipse.emf.ecore.EClass eClass = null;
+	«EXPAND xpt::Common::generatedMemberComment-»
+	private org.eclipse.emf.ecore.EObject eObject = null;
+
+	«REM» Mutating canvas auxiliary constructor «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment-»
+	public «createCommandClassName»(org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest req, org.eclipse.emf.ecore.EObject eObject) {
+		super(req.getLabel(), null, req);
+		this.eObject = eObject;
+		this.eClass = eObject != null ? eObject.eClass() : null;
+	}
+
+	«EXPAND xpt::diagram::commands::CreateNodeCommand::_constructor-»
+
+	«REM» Mutating canvas auxiliary builder «ENDREM»	
+	«EXPAND xpt::Common::generatedMemberComment-»
+	public static «createCommandClassName» create(org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest req, org.eclipse.emf.ecore.EObject eObject) {
+		return new «createCommandClassName»(req, eObject);
+	}
+	
+	«EXPAND xpt::diagram::commands::CreateNodeCommand::getElementToEdit-»
+
+	«EXPAND getEClassToEdit-»
+	
+	«EXPAND xpt::diagram::commands::CreateNodeCommand::canExecuteMethod-»
+
+	«EXPAND xpt::diagram::commands::CreateNodeCommand::doExecuteWithResultMethod»
+
+	«EXPAND xpt::diagram::commands::CreateNodeCommand::doConfigureMethod»
+}
+«ENDAROUND»
+
+«AROUND getElementToEdit FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.emf.ecore.EObject getElementToEdit() {
+	«REM» Mutating canvas helper «ENDREM»
+	org.eclipse.emf.ecore.EObject container =
+			((org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest) getRequest()).getContainer();
+	if (container instanceof org.eclipse.gmf.runtime.notation.View) {
+		container = ((org.eclipse.gmf.runtime.notation.View) container).getElement();
+	}
+	if (container != null) {
+		return container;
+	}
+	return eObject;
+}
+«ENDAROUND»
+
+«DEFINE getEClassToEdit FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.emf.ecore.EClass getEClassToEdit() {
+	«REM» Mutating canvas helper «ENDREM»
+	org.eclipse.emf.ecore.EObject eObject = getElementToEdit();
+	if (eObject != null) {
+		return eObject.eClass();
+	}
+	if (eClass != null) {
+		return eClass;
+	}
+	return «EXPAND MetaModel::MetaClass FOR modelFacet.containmentMetaFeature.genClass»;
+}
+«ENDDEFINE»
+
+/*
+ * Unlike original CreateElementCommand, we don't keep track of IStatus from configureCommand.execute,
+ * nor allow status setting from doDefaultCreation. The reason is ICommandProxy#execute implementation,
+ * which ignores any status from wrapped ICommand. Besides, both CommandResult and IStatus seems too much to me.
+ */
+«AROUND doConfigureMethod FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void doConfigure(«EXPAND MetaModel::QualifiedClassName FOR modelFacet.metaClass» newElement, org.eclipse.core.runtime.IProgressMonitor monitor, org.eclipse.core.runtime.IAdaptable info) throws org.eclipse.core.commands.ExecutionException {
+		«REM» fjccano :: add references to the diagram so that the elements are shown «ENDREM»
+		// add eObject eAnnotation reference to the diagram
+		«EXPAND addEAnnotationReferenceToDiagram FOR self»
+		
+		org.eclipse.gmf.runtime.emf.type.core.IElementType elementType = ((org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest) getRequest()).getElementType();
+		org.eclipse.gmf.runtime.emf.type.core.requests.ConfigureRequest configureRequest = new org.eclipse.gmf.runtime.emf.type.core.requests.ConfigureRequest(getEditingDomain(), «EXPAND MetaModel::DowncastToEObject('newElement') FOR modelFacet.metaClass», elementType);
+		configureRequest.setClientContext(((org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest) getRequest()).getClientContext());
+		configureRequest.addParameters(getRequest().getParameters());
+		org.eclipse.gmf.runtime.common.core.command.ICommand configureCommand = elementType.getEditCommand(configureRequest);
+		if (configureCommand != null && configureCommand.canExecute()) {
+			configureCommand.execute(monitor, info);
+		}
+	}
+«ENDAROUND»
+
+«DEFINE addEAnnotationReferenceToDiagram FOR gmfgen::GenNode»
+	«REM»fjcano:: the Diagram may have been passed as a paremeter in the request  «ENDREM»
+	org.eclipse.gmf.runtime.notation.Diagram diagram = es.cv.gvcase.mdt.common.util.MDTUtil.getDiagramFromRequest(getRequest());
+	if (diagram != null) {
+		es.cv.gvcase.mdt.common.util.MultiDiagramUtil.AddEAnnotationReferenceToDiagram(diagram, newElement);
+	}
+	else {
+		es.cv.gvcase.mdt.common.util.MultiDiagramUtil.
+			addEAnnotationReferenceToDiagram(
+			«self.getDiagram().editorGen.editor.packageName».«self.getDiagram().editorGen.plugin.activatorClassName».getInstance(), newElement);
+	}
+«ENDDEFINE»

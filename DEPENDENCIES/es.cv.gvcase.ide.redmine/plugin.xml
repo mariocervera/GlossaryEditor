@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            description="MOSKitt Redmine action set"
+            id="es.cv.gvcase.ide.redmine.ActionSet"
+            label="MOSKitt Redmine ActionSet"
+            visible="true">
+         <menu
+               id="es.cv.gvcase.ide.redmine.menu"
+               label="MOSKitt Redmine"
+               path="additions">
+            <groupMarker
+                  name="content">
+            </groupMarker>
+            <separator
+                  name="additions">
+            </separator>
+         </menu>
+         <action
+               class="es.cv.gvcase.ide.redmine.action.CreateNewIssueAction"
+               icon="icons/moskitt.gif"
+               id="es.cv.gvcase.ide.redmine.MOSKittRedmine"
+               label="Report new Issue on Redmine"
+               menubarPath="es.cv.gvcase.ide.redmine.menu/content"
+               style="push"
+               toolbarPath="Normal/additions"
+               tooltip="Open a dialog to create a new Issue (Bug or Feature Request) on MOSKitt Redmine">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="es.cv.gvcase.ide.redmine.preferences.MOSKittRedminePreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="es.cv.gvcase.ide.redmine.preferences.MOSKittRedminePreferencePage"
+            id="es.cv.gvcase.ide.redmine.preferences"
+            name="MOSKitt Redmine">
+      </page>
+   </extension>
+
+</plugin>

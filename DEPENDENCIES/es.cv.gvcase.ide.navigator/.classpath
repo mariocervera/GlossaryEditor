@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/eclipse/ui/internal/WorkbenchPage"/>
+			<accessrule kind="accessible" pattern="org/eclipse/ui/internal/EditorActionBars"/>
+			<accessrule kind="accessible" pattern="org/eclipse/ui/internal/ide/IDEWorkbenchPlugin"/>
+			<accessrule kind="accessible" pattern="org/eclipse/ui/internal/views/navigator/ResourceNavigatorMessages"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

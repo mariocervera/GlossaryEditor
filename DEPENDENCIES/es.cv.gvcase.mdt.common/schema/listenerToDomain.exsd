@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="es.cv.gvcase.mdt.common" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="es.cv.gvcase.mdt.common" id="listenerToDomain" name="listenerToDomain"/>
+      </appinfo>
+      <documentation>
+         This extension point contributes to add listeners to the editing domains with the specified identifiers.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="Listener" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="DomainListenerBinding" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Listener">
+      <complexType>
+         <attribute name="ID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The identifier for the listener. Should be unique.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="ListenerClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The Class that implements the listener.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.emf.transaction.ResourceSetListener"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="DomainListenerBinding">
+      <complexType>
+         <attribute name="Domain" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The identifier for the editing domain we want to add the listener.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="Listener" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The identifier for the listener we want to add to the domain.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="es.cv.gvcase.mdt.common.listenerToDomain/Listener/@ID"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="since"/>
+      </appinfo>
+      <documentation>
+         [Enter the first release in which this extension point appears.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiinfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="implementation"/>
+      </appinfo>
+      <documentation>
+         [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
+
+
+</schema>

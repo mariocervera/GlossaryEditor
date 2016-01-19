@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::providers::ParserUtils»
+
+«AROUND _setPatterns(viewMethod : gmfgen::LabelTextAccessMethod, editMethod : gmfgen::LabelTextAccessMethod, parserVar : String) FOR gmfgen::FeatureLabelModelFacet-»
+«IF viewMethod <> gmfgen::LabelTextAccessMethod::NATIVE-»
+	«REM»
+	  fjcano :: treat special tag in view pattern.
+	            the %SHOWCONTAINER% tag makes the label to show the name of the semantic element
+	«ENDREM»
+	«IF isPatternSpecified(((String)viewPattern).replaceAll("%SHOWCONTAINER%", ""))-»
+	«parserVar».setViewPattern("«((String)viewPattern).replaceAll("%SHOWCONTAINER%", "")»");«EXPAND xpt::Common::nonNLS(1)»
+	«ENDIF-»
+	«IF isPatternSpecified(editPattern)-»
+	«parserVar».setEditorPattern("«editPattern»");
+	«ELSE-»
+		«IF isPatternSpecified(((String)viewPattern).replaceAll("%SHOWCONTAINER%", ""))-»
+	«parserVar».setEditorPattern("«((String)viewPattern).replaceAll("%SHOWCONTAINER%", "")»");«EXPAND xpt::Common::nonNLS(1)»
+		«ENDIF-»
+	«ENDIF-»
+«ENDIF-»
+«IF editMethod <> gmfgen::LabelTextAccessMethod::NATIVE-»
+	«IF isPatternSpecified(editPattern)-»
+	«parserVar».setEditPattern("«editPattern»");
+	«ELSE-»
+		«IF isPatternSpecified(((String)viewPattern).replaceAll("%SHOWCONTAINER%", ""))-»
+	«parserVar».setEditPattern"«((String)viewPattern).replaceAll("%SHOWCONTAINER%", "")»");«EXPAND xpt::Common::nonNLS(1)»
+		«ENDIF-»
+	«ENDIF-»
+«ENDIF-»
+«ENDAROUND»

@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«AROUND handleNotificationEvent FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void handleNotificationEvent(org.eclipse.emf.common.notify.Notification notification) {
+		if (notification.getNotifier() == getModel() &&
+				org.eclipse.emf.ecore.EcorePackage.eINSTANCE.getEModelElement_EAnnotations().equals(notification.getFeature())) {
+			handleMajorSemanticChange();
+		} «EXPAND impl::diagram::editparts::NodeEditPart::notificationForShapeStyle»«REM»Added by Gabriel Merin [Appearance]«ENDREM» 
+		else {
+			super.handleNotificationEvent(notification);
+		}
+		
+		// mgil:: if the notification is for ADD an element and the element is
+		// an Edge, don't refresh the Diagram to avoid duplicated Links
+		if (notification.getEventType() == org.eclipse.emf.common.notify.Notification.ADD
+				&& isNewValueEdge(notification)) {
+			return;
+		} else {
+			java.util.List<org.eclipse.emf.ecore.EStructuralFeature> features = new java.util.ArrayList<org.eclipse.emf.ecore.EStructuralFeature>();
+				«FOREACH getDiagram().links AS link -»
+					«IF link.modelFacet <> null-»
+						«EXPAND impl::diagram::editparts::NodeEditPart::searchFeaturesForSemanticChange(modelFacet) FOR link.modelFacet-»					
+					«ENDIF-»
+				«ENDFOREACH-»
+			es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.handleNotificationForDiagram(this, notification, features);
+		}
+		// mgil:: end
+	}
+	
+	protected boolean isNewValueEdge(org.eclipse.emf.common.notify.Notification notification) {
+		if (notification != null) {
+			java.lang.Object newValue = notification.getNewValue();
+			//
+			if (newValue instanceof org.eclipse.emf.ecore.EObject) {
+				// check if the new value EObject is an Edge
+				org.eclipse.emf.ecore.EObject eObject = (org.eclipse.emf.ecore.EObject) newValue;
+				return «getDiagram().editorGen.editor.packageName».«getDiagram().visualIDRegistryClassName»
+						.«EXPAND xpt::editor::VisualIDRegistry::getLinkWithClassVisualIDMethodName FOR getDiagram()»((org.eclipse.emf.ecore.EObject) notification
+								.getNewValue()) > -1;
+			}
+		}
+		return false;
+	}
+	
+«ENDAROUND»
+
+«AROUND handleNotificationEvent FOR gmfgen::GenTopLevelNode-»
+	«REM»This code is important for refreshing shortcut decoration
+	on adding corresponding annotation to the View instance.«ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void handleNotificationEvent(org.eclipse.emf.common.notify.Notification notification) {
+		«EXPAND impl::diagram::editparts::NodeEditPart::handleNotificationEventBody-»
+	}
+«ENDAROUND»
+
+«AROUND additions FOR gmfgen::GenNode-»
+	«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+	«EXPAND impl::diagram::editparts::NodeEditPart::appearanceEAnnotationUtils-»
+	«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+	«EXPAND impl::diagram::editparts::NodeEditPart::appearanceBehaviour-»
+	«REM»Added by Marc Gil [Solve a bug when try to retrive the Viewer]«ENDREM»
+	«EXPAND impl::diagram::editparts::NodeEditPart::getViewer-»
+	«REM»Added by Javier Cano«ENDREM»
+	«EXPAND impl::diagram::editparts::NodeEditPart::getDeclaredBackgroundColor-»
+«ENDAROUND»

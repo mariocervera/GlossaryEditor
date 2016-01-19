@@ -1,0 +1,32 @@
+modeltype gmfgen uses "http://www.eclipse.org/gmf/2009/GenModel";
+modeltype genmodel uses "http://www.eclipse.org/emf/2002/GenModel";
+modeltype ecore uses "http://www.eclipse.org/emf/2002/Ecore";
+modeltype mutating uses "http://es.cv.gvcase.mdt.common.gmfgenextension.mutating";
+
+library mutatingUtils;
+
+helper getModelSwitchQualifiedName(gc : genmodel::GenClass) : String {
+	return (if gc.genPackage.basePackage <> null and gc.genPackage.ecorePackage.name <> null and gc.genPackage.utilityPackageSuffix <> null and gc.genPackage.prefix <> null
+	then
+		gc.genPackage.basePackage + '.' + gc.genPackage.ecorePackage.name + '.' + gc.genPackage.utilityPackageSuffix + '.' + gc.genPackage.prefix + 'Switch'
+	else
+		''
+	endif
+	)
+}
+
+helper getMutatingChildrenFeatures(referencer : mutating::AlternateCanvas) : Set(genmodel::GenFeature) {
+	return getMutatingNonPhantomSemanticChildren(referencer)->collect(node | node.typeModelFacet.childMetaFeature)->asSet()
+}
+
+helper getMutatingNonPhantomSemanticChildren(referencer : mutating::AlternateCanvas) : List(mutating::AlternateGenTopLevelNode) {
+	return getMutatingSemanticChildren(referencer)->select(node | not node.genTopLevelNode.modelFacet.isPhantomElement())
+}
+
+helper getMutatingSemanticChildren(referencer : mutating::AlternateCanvas, childMetaFeature : genmodel::GenFeature) : List(mutating::AlternateGenTopLevelNode) {
+	return getMutatingNonPhantomSemanticChildren(referencer)->select(node | node.typeModelFacet.childMetaFeature = childMetaFeature)
+}
+
+helper getMutatingSemanticChildren(referencer : mutating::AlternateCanvas) : List(mutating::AlternateGenTopLevelNode) {
+	return referencer.alternateTopLevelNodes->select(node | node.genTopLevelNode.modelFacet <> null)->asList()
+}

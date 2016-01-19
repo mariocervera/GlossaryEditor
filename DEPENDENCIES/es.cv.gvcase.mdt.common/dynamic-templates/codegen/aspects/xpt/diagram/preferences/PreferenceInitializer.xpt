@@ -1,0 +1,47 @@
+﻿/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION xpt::diagram::Utils»
+
+«AROUND PreferenceInitializer FOR gmfgen::GenDiagram-»
+«EXPAND xpt::Common::copyright FOR editorGen-»
+package «preferencesPackageName»;
+
+«EXPAND xpt::Common::generatedClassComment»
+public class «EXPAND xpt::diagram::preferences::PreferenceInitializer::className» extends org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer {
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void initializeDefaultPreferences() {
+		org.eclipse.jface.preference.IPreferenceStore store = getPreferenceStore();
+«IF preferences = null-»
+		«EXPAND xpt::diagram::preferences::PreferenceInitializer::initDefaults('store') FOREACH allPreferencePages(self)»
+«ELSE»
+		«EXPAND xpt::diagram::preferences::PreferenceInitializer::initDefaults('store') FOREACH (allPreferencePages(self))[gmfgen::GenCustomPreferencePage]»
+		«EXPAND xpt::diagram::preferences::PreferenceInitializer::initDefaults('store') FOR preferences-»
+«ENDIF-»
+		if (org.eclipse.core.runtime.Platform.getOS().equals(org.eclipse.core.runtime.Platform.OS_LINUX)) {
+			getPreferenceStore().setValue(
+					org.eclipse.gmf.runtime.diagram.ui.preferences.IPreferenceConstants.PREF_ENABLE_ANTIALIAS, false);
+		} else {
+			getPreferenceStore().setValue(
+					org.eclipse.gmf.runtime.diagram.ui.preferences.IPreferenceConstants.PREF_ENABLE_ANTIALIAS, true);
+		}
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected org.eclipse.jface.preference.IPreferenceStore getPreferenceStore() {
+		return «editorGen.plugin.getActivatorQualifiedClassName()».getInstance().getPreferenceStore();
+	}
+} 
+«ENDAROUND»

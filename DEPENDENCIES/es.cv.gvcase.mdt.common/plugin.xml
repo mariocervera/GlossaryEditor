@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="modelToEditorMap" name="ModelToEditorMap" schema="schema/modelToEditorMap.exsd"/>
+   <extension-point id="editorPalette" name="editorPalette" schema="schema/editorPalette.exsd"/>
+   <extension-point id="templates" name="Model Templates" schema="schema/templates.exsd"/>
+   <extension-point id="featureExtender" name="featureExtender" schema="schema/featureExtender.exsd"/>
+   <extension-point id="editorAssistantProvider" name="editorAssistantProvider" schema="schema/editorAssistantProvider.exsd"/>
+   <extension-point id="commandProviders" name="commandProviders" schema="schema/commandProviders.exsd"/>
+   <extension-point id="viewInfo" name="viewInfo" schema="schema/viewInfo.exsd"/>
+   <extension-point id="moskittEditorFactory" name="moskittEditorFactory" schema="schema/moskittEditorFactory.exsd"/>
+   <extension-point id="belongToDiagramPolicy" name="belongToDiagramPolicy" schema="schema/belongToDiagramPolicy.exsd"/>
+   <extension-point id="listenerToDomain" name="listenerToDomain" schema="schema/listenerToDomain.exsd"/>
+   <extension-point id="customizedDeleteFromModelCommand" name="customizedDeleteFromModelCommand" schema="schema/customizedDeleteFromModelCommand.exsd"/>
+   <extension-point id="runnableHook" name="runnableHook" schema="schema/runnableHook.exsd"/>
+   <extension-point id="diagramMigration" name="diagramMigration" schema="schema/diagramMigration.exsd"/>
+   <extension-point id="typesForDomain" name="typesForDomain" schema="schema/typesForDomain.exsd"/>
+   <extension-point id="typesForDomainFactory" name="typesForDomainFactory" schema="schema/typesForDomainFactory.exsd"/>
+   <extension-point id="modelInitializer" name="modelInitializer" schema="schema/modelInitializer.exsd"/>
+   <extension-point id="deleteFromModelAndDiagramBlackList" name="deleteFromModelAndDiagramBlackList" schema="schema/deleteFromModelAndDiagramBlackList.exsd"/>
+   <extension-point id="editPartCreateDiagram" name="editPartCreateDiagram" schema="schema/editPartCreateDiagram.exsd"/>
+   <extension-point id="diagramInitializer" name="diagramInitializer" schema="schema/diagramInitializer.exsd"/>
+   <extension-point id="propertySectionFeatureDescription" name="propertySectionFeatureDescription" schema="schema/propertySectionFeatureDescription.exsd"/>
+   <extension-point id="detailsCompositeProvider" name="detailsCompositeProvider" schema="schema/detailsCompositeProvider.exsd"/>
+   <extension-point id="templateElementTool" name="templateElementTool" schema="schema/templateElementTool.exsd"/>
+   <extension-point id="pluginWithImages" name="pluginWithImages" schema="schema/pluginWithImages.exsd"/>
+   <extension-point id="clipboardhandlers" name="clipboardhandlers" schema="schema/clipboardhandlers.exsd"/>
+   <extension
+         point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+       <contributionItemProvider
+            checkPluginLoaded="true"
+            class="es.cv.gvcase.mdt.common.actions.DeleteFromDiagramActionItemProvider">
+         <Priority name="Medium"/>
+		 <popupContribution
+               class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+			 <popupMenuGroup
+                  id="DeleteFromDiagramGroup"
+                  path="/propertiesGroup">
+             </popupMenuGroup>
+             <popupAction
+                  path="/editGroup"
+                  id="delete_from_diagram">
+             </popupAction>
+             <popupStructuredContributionCriteria
+                   policyClass="es.cv.gvcase.mdt.common.actions.DeleteFromDiagramPopupMenuContributionPolicy">
+             </popupStructuredContributionCriteria>            
+		 </popupContribution>
+      </contributionItemProvider>
+       <contributionItemProvider
+             checkPluginLoaded="true"
+             class="es.cv.gvcase.mdt.common.actions.DeleteActionItemProvider">
+          <Priority
+                name="Medium">
+          </Priority>
+          <popupContribution
+                class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+             <popupMenuGroup
+                   id="DeleteFromDiagramGroup"
+                   path="/propertiesGroup">
+             </popupMenuGroup>
+             <popupAction
+                   id="delete_from_model"
+                   path="/editGroup">
+             </popupAction>
+             <popupStructuredContributionCriteria
+                   policyClass="es.cv.gvcase.mdt.common.actions.DeleteActionMenuContributionPolicy">
+             </popupStructuredContributionCriteria>
+          </popupContribution>
+       </contributionItemProvider>
+   </extension>
+      <extension point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+      <?gmfgen generated="false"?>
+      <contributionItemProvider
+            checkPluginLoaded="true"
+            class="es.cv.gvcase.mdt.common.actions.OpenUpperDiagramContributionItemProvider">
+         <Priority name="Medium"/>
+		 <popupContribution
+               class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+			 <popupMenuGroup
+                  id="OpenUpperDiagramGroup"
+                  path="/propertiesGroup">
+             </popupMenuGroup>
+             <popupAction
+                  path="/OpenUpperDiagramGroup"
+                  id="common_action_open_upper_diagram">
+             </popupAction>
+             <popupStructuredContributionCriteria
+                   policyClass="es.cv.gvcase.mdt.common.actions.OpenUpperDiagramPopupMenuContributionPolicy">
+             </popupStructuredContributionCriteria>            
+		 </popupContribution>
+      </contributionItemProvider>
+   </extension>
+      <extension
+            point="org.eclipse.ui.startup">
+         <startup
+               class="es.cv.gvcase.mdt.common.Startup">
+         </startup>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.actions.FilterViewsLabelItemProvider">
+            <Priority
+                  name="Lowest">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupMenuGroup
+                     id="FilterViewsGroup"
+                     path="/propertiesGroup">
+               </popupMenuGroup>
+               <popupStructuredContributionCriteria
+                     policyClass="es.cv.gvcase.mdt.common.actions.FilterViewsLabelsPopupMenuContributionPolicy">
+               </popupStructuredContributionCriteria>
+               <popupAction
+                     id="filter_views_and_labels"
+                     path="/FilterViewsGroup">
+               </popupAction>
+            </popupContribution>
+         </contributionItemProvider>
+                  <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.actions.RestoreViewContributionItemProvider">
+            <Priority
+                  name="Lowest">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupMenuGroup
+                     id="RestoreViewsGroup"
+                     path="/propertiesGroup">
+               </popupMenuGroup>
+               <popupStructuredContributionCriteria
+                     policyClass="es.cv.gvcase.mdt.common.actions.RestoreViewPopupMenuContributionPolicy">
+               </popupStructuredContributionCriteria>
+               <popupAction
+                     id="es.cv.gvcase.mdt.common.actions.RestoreViewAction"
+                     path="/RestoreViewsGroup">
+               </popupAction>
+            </popupContribution>
+         </contributionItemProvider>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.actionFilterProviders">
+         <ActionFilterProvider
+               class="es.cv.gvcase.mdt.common.actions.DuplicateActionFilterProvider">
+            <Priority
+                  name="Highest">
+            </Priority>
+            <Attribute
+                  name="canDuplicate"
+                  value="enablement">
+            </Attribute>
+            <Attribute
+                  name="canDuplicate"
+                  value="visibility">
+            </Attribute>
+         </ActionFilterProvider>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.actions.MoveCompartmentObjectItemProvider">
+            <Priority
+                  name="Medium">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupMenuGroup
+                     id="menu_order_within_compartment_group"
+                     path="/propertiesGroup"
+                     separator="true">
+               </popupMenuGroup>
+               <popupMenu
+                     id="menu_order_within_compartment"
+                     path="/menu_order_within_compartment_group">
+               </popupMenu>
+               <popupStructuredContributionCriteria
+                     policyClass="es.cv.gvcase.mdt.common.actions.MoveCompartmentPopupContributionPolicy">
+               </popupStructuredContributionCriteria>
+            </popupContribution>
+         </contributionItemProvider>
+      </extension>
+      <extension
+            point="org.eclipse.core.runtime.preferences">
+         <initializer
+               class="es.cv.gvcase.mdt.common.preferences.MOSKittPreferenceInitializer">
+         </initializer>
+      </extension>
+      <extension
+            point="org.eclipse.ui.preferencePages">
+         <page
+               class="es.cv.gvcase.mdt.common.preferences.MOSKittPreferencePage"
+               id="es.cv.gvcase.mdt.common.general"
+               name="MOSKitt">
+         </page>
+         <page
+               category="es.cv.gvcase.mdt.common.general"
+               class="es.cv.gvcase.mdt.common.preferences.MOSKittNavigatorPreferencePage"
+               id="es.cv.gvcase.mdt.common.navigator"
+               name="Model Navigator">
+         </page>
+      </extension>
+      <extension
+            point="es.cv.gvcase.emf.common.editingDomainFactory">
+         <EditingDomainFactory
+               factoryClass="es.cv.gvcase.mdt.common.part.DiagramEditingDomainFactory"
+               id="es.cv.gvcase.mdt.common.DiagramEditingDomainFactory"
+               priority="Lowest">
+         </EditingDomainFactory>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="false"
+               class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContributionItemProvider">
+            <Priority
+                  name="Low">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupPredefinedItem
+                     id="deleteFromDiagramAction"
+                     remove="true">
+               </popupPredefinedItem>
+               <popupPredefinedItem
+                     id="deleteFromModelAction"
+                     remove="true">
+               </popupPredefinedItem>
+               <popupStructuredContributionCriteria
+                     policyClass="es.cv.gvcase.mdt.common.diagram.editparts.DeletePopupMenuContributionPolicy">
+               </popupStructuredContributionCriteria>
+            </popupContribution>
+         </contributionItemProvider>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.diagram.ui.decoratorProviders">
+         <decoratorProvider
+               class="es.cv.gvcase.mdt.common.provider.decorator.ElementWithDiagramDecoratorProvider">
+            <Priority
+                  name="Lowest">
+            </Priority>
+         </decoratorProvider>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.actions.OpenUpperDiagramContributionItemProvider">
+            <Priority
+                  name="Medium">
+            </Priority>
+            <partContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramWorkbenchPart">
+               <partAction
+                     id="common_action_open_upper_diagram"
+                     toolbarPath="/alignMenu">
+               </partAction></partContribution>
+         </contributionItemProvider>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.actions.OpenDiagramItemProvider">
+            <Priority
+                  name="Medium">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupMenuGroup
+                     id="OpenDiagramGroup"
+                     path="/propertiesGroup">
+               </popupMenuGroup>
+               <popupMenu
+                     id="menu_open_diagram"
+                     path="/OpenDiagramGroup">
+               </popupMenu>
+               <popupStructuredContributionCriteria
+                     policyClass="es.cv.gvcase.mdt.common.actions.OpenDiagramPopupMenuContributionPolicy">
+               </popupStructuredContributionCriteria>
+            </popupContribution>
+         </contributionItemProvider>
+         <!-- fjcano :: Remove generic Create Diagram to prevent overriding the specific one from each diagram/model
+     	 <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.commands.diagram.CreateDiagramItemProvider">
+            <Priority
+                  name="Medium">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupMenuGroup
+                     id="CreateDiagramGroup"
+                     path="/propertiesGroup">
+               </popupMenuGroup>
+               <popupMenu
+                     id="menu_create_diagram"
+                     path="/CreateDiagramGroup">
+               </popupMenu>
+               <popupStructuredContributionCriteria
+                     policyClass="es.cv.gvcase.mdt.common.commands.diagram.CreateDiagramPopupMenuContributionPolicy">
+               </popupStructuredContributionCriteria>
+            </popupContribution>
+         </contributionItemProvider>
+               -->
+      </extension>
+      <extension
+            point="es.cv.gvcase.mdt.common.propertySectionFeatureDescription">
+         <FeatureSectionDescription
+               description="Diagram name"
+               id="es.cv.gvcase.mdt.common.property.hint.DiagramName">
+            <EStructuralFeature
+                  id="Diagram.name">
+            </EStructuralFeature>
+         </FeatureSectionDescription>
+         <FeatureSectionDescription
+               description="Element name"
+               id="es.cv.gvcase.mdt.common.property.hint.ENamedElementName">
+            <EStructuralFeature
+                  id="ENamedElement.name">
+            </EStructuralFeature>
+         </FeatureSectionDescription>
+      </extension>
+      <extension
+            name="view grouping"
+            point="es.cv.gvcase.mdt.common.featureExtender">
+         <Feature
+               featureID="es.cv.gvcase.mdt.common.view.group.GroupCount"
+               maxMultiplicity="1"
+               minMultiplicity="0"
+               name="Group count"
+               type="Int">
+            <AdaptTo
+                  adapter="org.eclipse.gmf.runtime.notation.Diagram">
+            </AdaptTo>
+         </Feature>
+         <Feature
+               featureID="es.cv.gvcase.mdt.common.view.group.belongToGroup"
+               maxMultiplicity="1"
+               minMultiplicity="0"
+               name="Belong to group"
+               type="Int">
+            <AdaptTo
+                  adapter="org.eclipse.gmf.runtime.notation.View">
+            </AdaptTo>
+         </Feature>
+         <Feature
+               featureID="es.cv.gvcase.mdt.common.view.hideView"
+               maxMultiplicity="1"
+               minMultiplicity="0"
+               name="Hide View"
+               type="Boolean">
+            <AdaptTo
+                  adapter="org.eclipse.gmf.runtime.notation.View">
+            </AdaptTo>
+         </Feature>
+         <Feature
+               featureID="es.cv.gvcase.mdt.common.element.external"
+               maxMultiplicity="1"
+               minMultiplicity="0"
+               name="External"
+               type="Boolean">
+            <AdaptTo
+                  adapter="org.eclipse.emf.ecore.EModelElement">
+            </AdaptTo>
+         </Feature>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="true"
+               class="es.cv.gvcase.mdt.common.actions.GroupViewsContributionItemProvider">
+            <Priority
+                  name="Medium">
+            </Priority>
+            <partContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.parts.IDiagramWorkbenchPart">
+               <partAction
+                     id="common_action_group_views"
+                     toolbarPath="/alignMenu">
+               </partAction>
+            </partContribution>
+         </contributionItemProvider>
+      </extension>
+      <extension
+            point="org.eclipse.gmf.runtime.common.ui.services.action.contributionItemProviders">
+         <contributionItemProvider
+               checkPluginLoaded="true"
+               class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContributionItemProvider">
+            <Priority
+                  name="Low">
+            </Priority>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupStructuredContributionCriteria
+                     objectClass="org.eclipse.gmf.runtime.diagram.ui.editparts.IPrimaryEditPart"
+                     objectCount="2+">
+               </popupStructuredContributionCriteria>
+               <popupAction
+                     id="groupAction"
+                     path="/formatMenu/miscellaneousGroup">
+               </popupAction>
+            </popupContribution>
+            <popupContribution
+                  class="org.eclipse.gmf.runtime.diagram.ui.providers.DiagramContextMenuProvider">
+               <popupStructuredContributionCriteria
+                     objectClass="org.eclipse.gmf.runtime.diagram.ui.editparts.GroupEditPart">
+               </popupStructuredContributionCriteria>
+               <popupAction
+                     id="ungroupAction"
+                     path="/formatMenu/miscellaneousGroup">
+               </popupAction>
+            </popupContribution>
+         </contributionItemProvider>
+      </extension>
+      <extension
+         point="es.cv.gvcase.mdt.common.featureExtender">
+      <Feature
+            featureID="es.cv.gvcase.mdt.common.storage.storable.name"
+            maxMultiplicity="1"
+            minMultiplicity="0"
+            name="Stored name"
+            type="String">
+         <AdaptTo
+               adapter="org.eclipse.emf.ecore.EModelElement">
+         </AdaptTo>
+      </Feature>
+      <Feature
+            featureID="es.cv.gvcase.mdt.common.storage.storable.description"
+            maxMultiplicity="1"
+            minMultiplicity="0"
+            name="Stored Description"
+            type="String">
+         <AdaptTo
+               adapter="org.eclipse.emf.ecore.EModelElement">
+         </AdaptTo>
+      </Feature>
+      <Feature
+            featureID="es.cv.gvcase.mdt.common.storage.storable.nsUri"
+            maxMultiplicity="1"
+            minMultiplicity="0"
+            name="Applicable nsUri"
+            type="String">
+         <AdaptTo
+               adapter="org.eclipse.emf.ecore.EModelElement">
+         </AdaptTo>
+      </Feature>
+      <Feature
+            featureID="es.cv.gvcase.mdt.common.storage.storable.Identifier"
+            maxMultiplicity="1"
+            minMultiplicity="0"
+            name="Identifier"
+            type="String">
+         <AdaptTo
+               adapter="org.eclipse.emf.ecore.EModelElement">
+         </AdaptTo>
+      </Feature>
+      <Feature
+            featureID="es.cv.gvcase.mdt.common.storage.storable.relatedDiagrams"
+            maxMultiplicity="*"
+            minMultiplicity="0"
+            name="Related diagrams"
+            type="Reference">
+         <AdaptTo
+               adapter="org.eclipse.emf.ecore.EModelElement">
+         </AdaptTo>
+      </Feature>
+      <Feature
+            featureID="es.cv.gvcase.mdt.common.storage.storable.category"
+            maxMultiplicity="1"
+            minMultiplicity="0"
+            name="Category"
+            type="String">
+         <AdaptTo
+               adapter="org.eclipse.emf.ecore.EModelElement">
+         </AdaptTo>
+      </Feature>
+   </extension>
+   <extension
+          point="org.eclipse.gmf.runtime.common.ui.services.action.globalActionHandlerProviders">
+      <GlobalActionHandlerProvider
+            class="es.cv.gvcase.mdt.common.actions.handlers.ClipboardActionHandlerProvider"
+            id="MOSKitt Shared Render">
+         <Priority name="Lowest"/>
+         <ViewId id="es.cv.gvcase.mdt.common.EditorSite.SharedIdentifier">
+            <ElementType class="org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart">
+               <GlobalActionId actionId="cut"/>
+               <GlobalActionId actionId="copy"/>
+               <GlobalActionId actionId="paste"/>
+            </ElementType>
+         </ViewId>
+      </GlobalActionHandlerProvider>
+    </extension>
+</plugin>

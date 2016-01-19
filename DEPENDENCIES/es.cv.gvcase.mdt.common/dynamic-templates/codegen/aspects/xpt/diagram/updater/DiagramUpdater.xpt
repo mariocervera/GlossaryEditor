@@ -1,0 +1,193 @@
+/*
+ * Copyright (c) 2007, 2008 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/Ecore'»
+«IMPORT 'http://es.cv.gvcase.mdt.common.gmfgenextension.mutating'»
+
+«EXTENSION MetaModel»
+«EXTENSION gmf::EMFUtils»
+«EXTENSION xpt::GenModelUtils»
+«EXTENSION gmf::GenModelUtils»
+«EXTENSION xpt::diagram::updater::Utils»
+«EXTENSION aspects::xpt::mutatingUtils»
+
+«REM»Mutating Canvas :: semantic children of diagram must select the correct features depending on the element that is the actual canvas«ENDREM»
+«REM»@author :: fjcano (C) 2008«ENDREM»
+«AROUND getSemanticChildrenOfView FOR gmfgen::GenContainerBase-»
+	«IF self.oclIsTypeOf(GenDiagram) and getReferencingObjects(self.oclAsType(ecore::EObject))[mutating::AlternateCanvas]->size() > 0»
+		«REM»
+			The switch that performs the correct job according to the canvas' EObject
+		«ENDREM»
+		«EXPAND createUpdaterSwitch FOR self»
+		«REM»The canvas get method that depends on the Switch«ENDREM»
+		«EXPAND xpt::Common::generatedMemberComment»
+		public static java.util.List «EXPAND xpt::diagram::updater::DiagramUpdater::getSemanticChildrenMethodName»(org.eclipse.gmf.runtime.notation.View view) {
+			«IF getSemanticChildrenChildFeatures(self)->size() > 0 or getPhantomNodes(self)->size() > 0-»
+				«EXPAND xpt::diagram::updater::DiagramUpdater::defineModelElement-»
+				aSwitch.setInfo(view);
+				java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»> result = aSwitch.doSwitch(modelElement);
+				if (result == null || result.size() <= 0) {
+					return java.util.Collections.EMPTY_LIST;
+				}
+				«IF not getPhantomNodes(self)->isEmpty()-»
+					org.eclipse.emf.ecore.resource.Resource resource = modelElement.eResource();
+					for (java.util.Iterator semanticIterator = getPhantomNodesIterator(resource); semanticIterator.hasNext();) {
+						org.eclipse.emf.ecore.EObject childElement = (org.eclipse.emf.ecore.EObject) semanticIterator.next();
+						if (childElement == modelElement) {
+							continue;
+						}
+						«EXPAND xpt::diagram::updater::DiagramUpdater::addNextIfPhantom FOREACH getPhantomNodes(self)-»
+					}
+				«ENDIF-»		
+				return result;
+			«ELSE-»
+			return java.util.Collections.EMPTY_LIST;
+			«ENDIF-»
+		}
+	«ELSE»
+		«targetDef.proceed()-»
+	«ENDIF»
+«ENDAROUND»
+
+«REM»The EcoreSwitch that will navigate the proper features according to the canvas' EObject«ENDREM»
+«DEFINE createUpdaterSwitch FOR gmfgen::GenDiagram»
+«EXPAND xpt::Common::generatedMemberComment»
+	static class ThisDiagramUpdaterSwitch extends es.cv.gvcase.mdt.common.util.BasicEcoreSwitch<java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»>, org.eclipse.gmf.runtime.notation.View> {
+		@Override
+		public java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»> doSwitch(org.eclipse.emf.ecore.EObject modelElement) {
+			«REM»getInfo provides the View«ENDREM»
+			final org.eclipse.gmf.runtime.notation.View view = getInfo();
+			if (view == null) {
+				return java.util.Collections.EMPTY_LIST;
+			}
+			
+			«getModelSwitchQualifiedName(domainDiagramElement)»<java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»>> aSwitch = new «getModelSwitchQualifiedName(domainDiagramElement)»<java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»>>() {
+				«REM»Start of cases«ENDREM»
+				@Override
+				public java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»> case«domainDiagramElement.ecoreClass.name»(«EXPAND MetaModel::QualifiedClassName FOR domainDiagramElement» modelElement) {
+					java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»> result = new java.util.LinkedList<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»>();
+					«FOREACH getSemanticChildrenChildFeatures(self) AS childMetaFeature-»
+						«IF null = childMetaFeature-»
+							{ /*FIXME no containment/child feature found in the genmodel, toolsmith need to specify Class here manually*/ childElement = /*FIXME no containment/child feature found in the genmodel, toolsmith need to specify correct one here manually*/;
+						«ELSEIF isListType(childMetaFeature)-»
+					for (java.util.Iterator it = «EXPAND xpt::Common::getFeatureValue('modelElement', getModelElementType()) FOR childMetaFeature».iterator(); it.hasNext();) {
+						«EXPAND MetaModel::QualifiedClassName FOR getTypeGenClassX(childMetaFeature)» childElement = («getQualifiedInterfaceName(getTypeGenClassX(childMetaFeature))») it.next();
+						«ELSE-»
+					{ «getQualifiedInterfaceName(getTypeGenClassX(childMetaFeature))» childElement = «EXPAND xpt::Common::getFeatureValue('modelElement', getModelElementType()) FOR childMetaFeature»;
+						«ENDIF-»
+						int visualID = «EXPAND xpt::editor::VisualIDRegistry::getNodeVisualIDMethodCall FOR getDiagram()»(view, «EXPAND xpt::Common::castToEObject FOR getTypeGenClassX(childMetaFeature)»childElement);
+						«EXPAND xpt::diagram::updater::DiagramUpdater::checkChildElementVisualID(null <> childMetaFeature and isListType(childMetaFeature)) FOREACH getSemanticChildren(self, childMetaFeature)-»
+					}
+					«ENDFOREACH-»
+					«IF not getPhantomNodes(self)->isEmpty()-»
+					org.eclipse.emf.ecore.resource.Resource resource = modelElement.eResource();
+					for (java.util.Iterator semanticIterator = getPhantomNodesIterator(resource); semanticIterator.hasNext();) {
+						org.eclipse.emf.ecore.EObject childElement = (org.eclipse.emf.ecore.EObject) semanticIterator.next();
+						if (childElement == modelElement) {
+							continue;
+						}
+					«EXPAND xpt::diagram::updater::DiagramUpdater::addNextIfPhantom FOREACH getPhantomNodes(self)-»
+					}
+					«ENDIF-»		
+					return result;
+				}
+				
+				«FOREACH getReferencingObjects(self.oclAsType(ecore::EObject))[mutating::AlternateCanvas] AS referencer»
+				@Override
+				public java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»> case«referencer.domainDiagramElement.ecoreClass.name»(«getQualifiedInterfaceName(referencer.domainDiagramElement)» modelElement) {
+					java.util.List<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»> result = new java.util.LinkedList<«editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»>();
+					«REM»«FOREACH getSemanticChildrenChildFeatures(self) AS childMetaFeature-»«ENDREM»
+					«FOREACH getMutatingChildrenFeatures(referencer) AS childMetaFeature-»
+						«IF null = childMetaFeature-»
+							{ /*FIXME no containment/child feature found in the genmodel, toolsmith need to specify Class here manually*/ childElement = /*FIXME no containment/child feature found in the genmodel, toolsmith need to specify correct one here manually*/;
+						«ELSEIF isListType(childMetaFeature)-»
+					for (java.util.Iterator it = «EXPAND xpt::Common::getFeatureValue('modelElement', referencer.domainDiagramElement) FOR childMetaFeature».iterator(); it.hasNext();) {
+						«getQualifiedInterfaceName(getTypeGenClassX(childMetaFeature))» childElement = («getQualifiedInterfaceName(getTypeGenClassX(childMetaFeature))») it.next();
+						«ELSE-»
+					{ «getQualifiedInterfaceName(getTypeGenClassX(childMetaFeature))» childElement = «EXPAND xpt::Common::getFeatureValue('modelElement', referencer.domainDiagramElement) FOR childMetaFeature»;
+						«ENDIF-»
+						int visualID = «EXPAND xpt::editor::VisualIDRegistry::getNodeVisualIDMethodCall FOR getDiagram()»(view, «EXPAND xpt::Common::castToEObject FOR getTypeGenClassX(childMetaFeature)»childElement);
+						«REM»«EXPAND xpt::diagram::updater::DiagramUpdater::checkChildElementVisualID(null != childMetaFeature && isListType(childMetaFeature)) FOREACH getSemanticChildren(this, childMetaFeature)-»«ENDREM»
+						«EXPAND checkMutatingChildElementVisualID(null <> childMetaFeature and isListType(childMetaFeature)) FOREACH getMutatingSemanticChildren(referencer, childMetaFeature)-»
+					}
+					«ENDFOREACH-»	
+					return result;
+				}
+				«ENDFOREACH»
+				
+				«REM»End of cases«ENDREM»			
+			};
+			return aSwitch.doSwitch(modelElement);
+		}
+	};
+
+	«REM»The global variable for a Switch«ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	private static ThisDiagramUpdaterSwitch aSwitch = new ThisDiagramUpdaterSwitch();
+«ENDDEFINE»
+
+«REM» Mutating check Visual ID «ENDREM»
+«DEFINE checkMutatingChildElementVisualID(boolean inLoop) FOR mutating::AlternateGenTopLevelNode-»
+	if (visualID == «EXPAND visualID») {
+		result.add(new «genTopLevelNode.getDiagram().editorGen.diagramUpdater.getNodeDescriptorQualifiedClassName()»(«IF null <> typeModelFacet.childMetaFeature»«EXPAND xpt::Common::castToEObject FOR getTypeGenClassX(typeModelFacet.childMetaFeature)»«ENDIF»childElement, visualID));
+	«IF inLoop-»
+		continue;
+	«ENDIF-»
+	}
+«ENDDEFINE»
+
+«REM» Mutating VisualID espansion «ENDREM»
+«DEFINE visualID FOR mutating::AlternateGenTopLevelNode»
+	«EXPAND xpt::editor::VisualIDRegistry::visualID FOR genTopLevelNode»
+«ENDDEFINE»
+
+«AROUND additions FOR gmfgen::GenDiagramUpdater»
+	«REM» DiagramLinksViewInfo starts here «ENDREM»
+	«EXPAND diagramLinksViewInfoDeclaration-»
+	«EXPAND diagramLinksViewInfoDeclarationGetter-»
+	«REM» DiagramLinksViewInfo ends here «ENDREM»
+«ENDAROUND»
+
+«DEFINE diagramLinksViewInfoDeclaration FOR gmfgen::GenDiagramUpdater»
+	«EXPAND xpt::Common::generatedMemberComment»
+	private static es.cv.gvcase.mdt.common.provider.IDiagramLinksViewInfo diagramLinksViewInfo = new es.cv.gvcase.mdt.common.provider.IDiagramLinksViewInfo() {
+		«EXPAND xpt::Common::generatedMemberComment»
+		public java.util.List<es.cv.gvcase.mdt.common.provider.ILinkDescriptor> getAllLinks(org.eclipse.gmf.runtime.notation.View view) {
+			java.util.List<es.cv.gvcase.mdt.common.provider.ILinkDescriptor> allLinks = new java.util.ArrayList<es.cv.gvcase.mdt.common.provider.ILinkDescriptor>();
+			allLinks.addAll(getContainedLinks(view));
+			allLinks.addAll(getIncomingLinks(view));
+			allLinks.addAll(getOutgoingLinks(view));
+			return allLinks;
+		}
+		«EXPAND xpt::Common::generatedMemberComment»
+		public java.util.List<es.cv.gvcase.mdt.common.provider.ILinkDescriptor> getContainedLinks(org.eclipse.gmf.runtime.notation.View view) {
+			return «diagramUpdaterClassName».this.getContainedLinks(view);
+		}
+		«EXPAND xpt::Common::generatedMemberComment»
+		public java.util.List<es.cv.gvcase.mdt.common.provider.ILinkDescriptor> getIncomingLinks(org.eclipse.gmf.runtime.notation.View view) {
+			return «diagramUpdaterClassName».this.getIncomingLinks(view);
+		}
+		«EXPAND xpt::Common::generatedMemberComment»
+		public java.util.List<es.cv.gvcase.mdt.common.provider.ILinkDescriptor> getOutgoingLinks(org.eclipse.gmf.runtime.notation.View view) {
+			return «diagramUpdaterClassName».this.getOutgoingLinks(view);
+		}
+
+	};
+«ENDDEFINE»
+
+«DEFINE diagramLinksViewInfoDeclarationGetter FOR gmfgen::GenDiagramUpdater»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public static es.cv.gvcase.mdt.common.provider.IDiagramLinksViewInfo getDiagramLinksViewInfo() {
+		return diagramLinksViewInfo;
+	}
+«ENDDEFINE»

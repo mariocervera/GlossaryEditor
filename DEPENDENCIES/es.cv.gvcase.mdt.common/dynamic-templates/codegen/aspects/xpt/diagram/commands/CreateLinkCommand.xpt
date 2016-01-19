@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) 2007, 2008 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION xpt::diagram::Utils»
+
+/*
+ * TODO invocation of configure command should be optional, and better yet, 
+ * configuration should rather happen from EditPolicy then from within creation command 
+ */
+«AROUND doConfigure(link : gmfgen::GenLink) FOR gmfgen::TypeLinkModelFacet-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void doConfigure(«EXPAND MetaModel::QualifiedClassName FOR metaClass» newElement, org.eclipse.core.runtime.IProgressMonitor monitor, org.eclipse.core.runtime.IAdaptable info) throws org.eclipse.core.commands.ExecutionException {
+		«REM» fjcano :: Add references to the diagram so that the elements are shown «ENDREM»
+		// add eObject eAnnotation reference to the diagram
+		«EXPAND addEAnnotationReferenceToDiagram FOR link»
+		
+		org.eclipse.gmf.runtime.emf.type.core.IElementType elementType = ((org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest) getRequest()).getElementType();
+		org.eclipse.gmf.runtime.emf.type.core.requests.ConfigureRequest configureRequest = new org.eclipse.gmf.runtime.emf.type.core.requests.ConfigureRequest(getEditingDomain(), «EXPAND MetaModel::DowncastToEObject('newElement') FOR metaClass», elementType);
+		configureRequest.setClientContext(((org.eclipse.gmf.runtime.emf.type.core.requests.CreateElementRequest) getRequest()).getClientContext());
+		configureRequest.addParameters(getRequest().getParameters());
+		configureRequest.setParameter(org.eclipse.gmf.runtime.emf.type.core.requests.CreateRelationshipRequest.SOURCE, getSource());
+		configureRequest.setParameter(org.eclipse.gmf.runtime.emf.type.core.requests.CreateRelationshipRequest.TARGET, getTarget());
+		org.eclipse.gmf.runtime.common.core.command.ICommand configureCommand = elementType.getEditCommand(configureRequest);
+		if (configureCommand != null && configureCommand.canExecute()) {
+			configureCommand.execute(monitor, info);
+		}
+	}
+«ENDAROUND»
+
+«DEFINE addEAnnotationReferenceToDiagram FOR gmfgen::GenLink-»
+	«REM»fjcano:: the Diagram may have been passed as a paremeter in the request  «ENDREM»
+	org.eclipse.gmf.runtime.notation.Diagram diagram = es.cv.gvcase.mdt.common.util.MDTUtil.getDiagramFromRequest(getRequest());
+	if (diagram != null) {
+		es.cv.gvcase.mdt.common.util.MultiDiagramUtil.AddEAnnotationReferenceToDiagram(diagram, newElement);
+	}
+	else {
+		es.cv.gvcase.mdt.common.util.MultiDiagramUtil.addEAnnotationReferenceToDiagram(
+			«self.diagram.editorGen.editor.packageName».«self.diagram.editorGen.plugin.activatorClassName».getInstance(), newElement);
+	}
+«ENDDEFINE»

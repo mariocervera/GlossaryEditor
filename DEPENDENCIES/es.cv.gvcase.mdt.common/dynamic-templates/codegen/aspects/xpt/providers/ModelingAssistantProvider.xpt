@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION xpt::diagram::Utils»
+«EXTENSION xpt::providers::i18n»
+
+«AROUND getTypesForPopupBar FOR gmfgen::GenDiagram-»
+	«REM» fjcano :: [modeling assistant] customize the types
+	      that can be create for a type «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public java.util.List getTypesForPopupBar(org.eclipse.core.runtime.IAdaptable host) {
+		org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart editPart =
+				(org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart) host.getAdapter(
+						org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart.class);
+		«FOREACH getAllContainers()->asSequence() AS container-»
+			«IF container.getAssistantNodes()->size() > 0-»
+		if (editPart instanceof «container.getEditPartQualifiedClassName()») {
+			java.util.List types = new java.util.ArrayList(«container.getAssistantNodes()->size()»);
+				«FOREACH container.getAssistantNodes()->asSequence() AS node-»
+			types.add(«EXPAND xpt::providers::ElementTypes::accessElementType FOR node»);
+				«ENDFOREACH-»
+			«EXPAND customizeTypes FOR editorGen.editor-»
+			return types;
+		}
+			«ENDIF-»
+		«ENDFOREACH-»
+		return java.util.Collections.EMPTY_LIST;
+	}
+«ENDAROUND»
+
+«DEFINE customizeTypes FOR gmfgen::GenEditorView»
+	types = es.cv.gvcase.mdt.common.provider.assistant.ModelingAssistantRegistry.getInstance()
+				.customizeTypesForEditPart(«packageName».«className».ID, editPart, types); «-»
+«ENDDEFINE»

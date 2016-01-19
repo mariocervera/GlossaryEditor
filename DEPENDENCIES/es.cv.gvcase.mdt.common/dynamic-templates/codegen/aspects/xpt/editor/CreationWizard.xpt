@@ -1,0 +1,325 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION xpt::editor::Utils»
+«EXTENSION xpt::editor::GenDiagram»
+
+«AROUND CreationWizard FOR gmfgen::GenDiagram-»
+«EXPAND xpt::Common::copyright FOR editorGen-»
+package «editorGen.editor.packageName»;
+
+«EXPAND xpt::Common::generatedClassComment»
+public class «creationWizardClassName»
+		extends org.eclipse.jface.wizard.Wizard implements es.cv.gvcase.mdt.common.part.INewModelDiagramWizard {
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private org.eclipse.ui.IWorkbench workbench;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+    protected org.eclipse.jface.viewers.IStructuredSelection selection;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected «getCreationWizardPageQualifiedClassName()» diagramModelFilePage;
+	«IF standaloneDomainModel(self)-»
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected «getCreationWizardPageQualifiedClassName()» domainModelFilePage;
+	«ENDIF-»
+	
+	«EXPAND xpt::Common::generatedMemberComment»
+	private es.cv.gvcase.mdt.common.part.SelectTemplateWizardPage selectTemplateWizardPage;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected org.eclipse.emf.ecore.resource.Resource diagram;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private boolean openNewlyCreatedDiagramEditor = true;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+    public org.eclipse.ui.IWorkbench getWorkbench() {
+        return workbench;
+    }
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public org.eclipse.jface.viewers.IStructuredSelection getSelection() {
+        return selection;
+    }
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public final org.eclipse.emf.ecore.resource.Resource getDiagram() {
+		return diagram;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public final boolean isOpenNewlyCreatedDiagramEditor() {
+		return openNewlyCreatedDiagramEditor;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setOpenNewlyCreatedDiagramEditor(boolean openNewlyCreatedDiagramEditor) {
+		this.openNewlyCreatedDiagramEditor = openNewlyCreatedDiagramEditor;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void init(org.eclipse.ui.IWorkbench workbench, org.eclipse.jface.viewers.IStructuredSelection selection) {
+        this.workbench = workbench;
+        this.selection = selection;
+		setWindowTitle(«EXPAND xpt::Externalizer::accessorCall(titleKey(i18nKeyForCreationWizard(self))) FOR editorGen»);
+		setDefaultPageImageDescriptor(«editorGen.plugin.getActivatorQualifiedClassName()».getBundledImageDescriptor(
+				"icons/wizban/New«IF domainDiagramElement <> null»«domainDiagramElement.genPackage.prefix»«ENDIF»Wizard.gif")); //$NON-NLS-1$
+		setNeedsProgressMonitor(true);
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void addPages() {
+		diagramModelFilePage = new «getCreationWizardPageQualifiedClassName()»(
+				"DiagramModelFile", getSelection(), "«editorGen.diagramFileExtension»"); //$NON-NLS-1$ //$NON-NLS-2$
+		diagramModelFilePage.setTitle(«EXPAND xpt::Externalizer::accessorCall(titleKey(i18nKeyForCreationWizardDiagramPage(self))) FOR editorGen»);
+		diagramModelFilePage.setDescription(«EXPAND xpt::Externalizer::accessorCall(descriptionKey(i18nKeyForCreationWizardDiagramPage(self))) FOR editorGen»);
+		addPage(diagramModelFilePage);
+		«REM» jmunoz :: model tempaltes support«ENDREM»
+		selectTemplateWizardPage = new es.cv.gvcase.mdt.common.part.SelectTemplateWizardPage(«editorGen.editor.getQualifiedClassName()».ID,
+				null, null);
+		addPage(selectTemplateWizardPage);
+	«IF standaloneDomainModel(self)-»
+		domainModelFilePage = new «getCreationWizardPageQualifiedClassName()»(
+				"DomainModelFile", getSelection(), "«editorGen.domainFileExtension»") { //$NON-NLS-1$ //$NON-NLS-2$
+
+			public void setVisible(boolean visible) {
+				if (visible) {
+					String fileName = diagramModelFilePage.getFileName();
+					fileName = fileName.substring(0, fileName.length() - ".«editorGen.diagramFileExtension»".length()); //$NON-NLS-1$
+					setFileName(«getDiagramEditorUtilQualifiedClassName()».getUniqueFileName(
+							getContainerFullPath(), fileName, "«editorGen.domainFileExtension»")); //$NON-NLS-1$
+				}
+				super.setVisible(visible);
+			}
+		};
+		domainModelFilePage.setTitle(«EXPAND xpt::Externalizer::accessorCall(titleKey(i18nKeyForCreationWizardDomainPage(self))) FOR editorGen»);
+		domainModelFilePage.setDescription(«EXPAND xpt::Externalizer::accessorCall(descriptionKey(i18nKeyForCreationWizardDomainPage(self))) FOR editorGen»);
+		
+		addPage(domainModelFilePage);
+	«ENDIF-»
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public boolean performFinish() {
+		org.eclipse.jface.operation.IRunnableWithProgress op =
+	«IF editorGen.application = null-»
+				new org.eclipse.ui.actions.WorkspaceModifyOperation(null) {
+
+			protected void execute(org.eclipse.core.runtime.IProgressMonitor monitor)
+					throws org.eclipse.core.runtime.CoreException, InterruptedException {
+	«ELSE-»
+				new org.eclipse.jface.operation.IRunnableWithProgress() {
+
+			public void run(org.eclipse.core.runtime.IProgressMonitor monitor)
+					throws InvocationTargetException, InterruptedException {
+	«ENDIF-»
+						String templatePath = selectTemplateWizardPage
+						.getTemplatePath();
+
+
+	«IF standaloneDomainModel(self)-»
+				org.eclipse.emf.ecore.resource.Resource modelResource = null;
+					«REM» jmunoz :: model tempaltes support«ENDREM»
+					if (templatePath != null) { // Copy the template file into the domain file
+					String pluginId = selectTemplateWizardPage
+							.getTemplatePluginId();
+
+					modelResource = «getDiagramEditorUtilQualifiedClassName()»
+							.initializeFromTemplate(domainModelFilePage
+									.getURI(), pluginId, templatePath);
+				} else {
+					modelResource = «getDiagramEditorUtilQualifiedClassName()».createModel(
+							domainModelFilePage.getURI(), monitor);
+				}
+				
+				// create the selected primitive types hierarchy
+				createAbstractBasicTypes(modelResource);
+				
+				diagram = «getDiagramEditorUtilQualifiedClassName()».createDiagram(diagramModelFilePage.getURI(),
+							 modelResource.getContents().get(0),
+				 			monitor);
+	
+	«ELSE-»
+	
+					if (templatePath != null) { // Copy the template file into the domain file
+					String pluginId = selectTemplateWizardPage
+							.getTemplatePluginId();
+							
+						 diagram = «getDiagramEditorUtilQualifiedClassName()»
+							.initializeFromTemplate(diagramModelFilePage
+									.getURI(), pluginId, templatePath); 
+					} else {
+					      diagram = «getDiagramEditorUtilQualifiedClassName()».createDiagram(diagramModelFilePage.getURI(),
+					      				monitor);
+					}
+			  	«ENDIF-»
+				if (isOpenNewlyCreatedDiagramEditor() && diagram != null) {
+					try {
+						«getDiagramEditorUtilQualifiedClassName()».openDiagram(diagram);
+					} catch (org.eclipse.ui.PartInitException e) {
+						org.eclipse.jface.dialogs.ErrorDialog.openError(getContainer().getShell(),
+								«EXPAND xpt::Externalizer::accessorCall(i18nKeyForCreationWizardOpenEditorError(self)) FOR editorGen», null, e.getStatus());
+					}
+				}
+			}
+		};
+		try {
+			getContainer().run(false, true, op);
+		} catch (InterruptedException e) {
+			return false;
+		} catch (java.lang.reflect.InvocationTargetException e) {
+			if (e.getTargetException() instanceof org.eclipse.core.runtime.CoreException) {
+				org.eclipse.jface.dialogs.ErrorDialog.openError(getContainer().getShell(),
+						«EXPAND xpt::Externalizer::accessorCall(i18nKeyForCreationWizardCreationError(self)) FOR editorGen», null,
+						((org.eclipse.core.runtime.CoreException) e.getTargetException()).getStatus());
+			} else {
+				«editorGen.plugin.getActivatorQualifiedClassName()».getInstance().logError(
+						"Error creating diagram", e.getTargetException()); //$NON-NLS-1$
+			}
+			return false;
+		}
+		return diagram != null;
+	}
+	«EXPAND xpt::editor::CreationWizard::additions-»
+}
+«ENDAROUND»
+
+«AROUND xpt::editor::CreationWizard::additions FOR gmfgen::GenDiagram»
+	«targetDef.proceed()-»
+	«EXPAND INewDiagramFileWizardMethods FOR self-»
+	«EXPAND createAbstractTypes FOR self-»
+«ENDAROUND»
+
+«DEFINE INewDiagramFileWizardMethods FOR gmfgen::GenDiagram»
+	// //
+	// INewDiagramFileWizard methods
+	// //
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private org.eclipse.emf.ecore.EObject modelRootElement = null;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private java.util.Collection<org.eclipse.emf.ecore.EObject> selectedElementsForDiagram = null;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private String diagramKind = null;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private org.eclipse.gmf.runtime.diagram.core.preferences.PreferencesHint preferencesHint = null;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	private java.util.Collection<es.cv.gvcase.mdt.common.model.TypesGroup> selectedBasicTypes = null;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public org.eclipse.emf.ecore.EObject getRootModelElement() {
+		return this.modelRootElement;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public java.util.Collection<org.eclipse.emf.ecore.EObject> getSelectedElementForDiagram() {
+		return this.selectedElementsForDiagram;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setRootModelElement(org.eclipse.emf.ecore.EObject rootElement) {
+		this.modelRootElement = rootElement;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setSelectedElementForDiagram(
+			java.util.Collection<org.eclipse.emf.ecore.EObject> selectedEObjects) {
+		this.selectedElementsForDiagram = selectedEObjects;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public String getDiagramKind() {
+		return this.diagramKind;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public org.eclipse.gmf.runtime.diagram.core.preferences.PreferencesHint getPreferencesHint() {
+		return this.preferencesHint;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setDiagramKind(String diagramKind) {
+		this.diagramKind = diagramKind;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setPreferencesHint(org.eclipse.gmf.runtime.diagram.core.preferences.PreferencesHint preferencesHint) {
+		this.preferencesHint = preferencesHint;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public java.util.Collection<es.cv.gvcase.mdt.common.model.TypesGroup> getSelectedBasicTypes() {
+		return this.selectedBasicTypes;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setSelectedBasicTypes(java.util.Collection<es.cv.gvcase.mdt.common.model.TypesGroup> basicTypes) {
+		this.selectedBasicTypes = basicTypes;
+	}
+«ENDDEFINE»
+
+«DEFINE createAbstractTypes FOR gmfgen::GenDiagram»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void createAbstractBasicTypes(org.eclipse.emf.ecore.resource.Resource modelResource) {
+		if (modelResource == null || modelResource.getContents().isEmpty()) {
+			return;
+		}
+		final org.eclipse.emf.ecore.EObject modelRoot = modelResource.getContents().get(0);
+		org.eclipse.emf.transaction.TransactionalEditingDomain domain = org.eclipse.emf.transaction.util.TransactionUtil
+				.getEditingDomain(modelRoot);
+		if (domain != null) {
+			es.cv.gvcase.mdt.common.commands.AbstractCommonTransactionalCommmand command = new es.cv.gvcase.mdt.common.commands.AbstractCommonTransactionalCommmand(
+					domain, "Create Abstract Types", null) {
+				@Override
+				protected org.eclipse.gmf.runtime.common.core.command.CommandResult doExecuteWithResult(
+						org.eclipse.core.runtime.IProgressMonitor monitor, org.eclipse.core.runtime.IAdaptable info)
+						throws org.eclipse.core.commands.ExecutionException {
+					createAbstractDataTypesInModel(modelRoot);
+					return null;
+				}
+			};
+			command.executeInTransaction();
+		} else {
+			createAbstractDataTypesInModel(modelRoot);
+		}
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected void createAbstractDataTypesInModel(org.eclipse.emf.ecore.EObject modelRoot) {
+		if (modelRoot == null) {
+			return;
+		}
+		String editorID = selectTemplateWizardPage.getEditorId();
+		es.cv.gvcase.mdt.common.model.ITypesFactory typesFactory = es.cv.gvcase.mdt.common.model.TypesFactoryRegistry.getInstance()
+				.getITypesFactoryForEditor(editorID);
+		if (typesFactory != null) {
+			java.util.Collection<es.cv.gvcase.mdt.common.model.TypesGroup> typesGroups = getSelectedBasicTypes();
+			if (typesGroups == null || typesGroups.isEmpty()) {
+				return;
+			}
+			// get selected group types and create them
+			for (es.cv.gvcase.mdt.common.model.TypesGroup group : typesGroups) {
+				typesFactory.createTypeGroupInModel(group, modelRoot);
+			}
+		}
+	}
+«ENDDEFINE»
+

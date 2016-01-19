@@ -1,0 +1,110 @@
+import xpt.StringOperations;
+
+modeltype gmfgen uses "http://www.eclipse.org/gmf/2009/GenModel";
+modeltype genmodel uses "http://www.eclipse.org/emf/2002/GenModel";
+modeltype ecore uses "http://www.eclipse.org/emf/2002/Ecore";
+
+library ViewInfoUtils;
+
+helper modelFacetToString(facet : gmfgen::FeatureLabelModelFacet, node : gmfgen::GenCommonBase) : String {
+	return modelFacetFeaturesToComaString(facet.metaFeatures->asSequence(), node)
+}
+
+helper modelFacetToString(facet : gmfgen::FeatureLabelModelFacet, node : gmfgen::GenNodeLabel) : String {
+	return modelFacetFeaturesToComaString(facet.metaFeatures->asSequence(), node.node)
+}
+
+helper modelFacetToString(facet : gmfgen::FeatureLabelModelFacet, link : gmfgen::GenLinkLabel) : String {
+	return modelFacetFeaturesToComaString(facet.metaFeatures->asSequence(), link.link)
+}
+
+helper modelFacetToString(facet : gmfgen::DesignLabelModelFacet, node : gmfgen::GenCommonBase) : String {
+	return 'TODO - auto generated stub'
+}
+
+helper modelFacetToString(facet : gmfgen::FeatureLinkModelFacet, node : gmfgen::GenCommonBase) : String {
+	return metaFeatureName(facet.metaFeature)
+}
+
+helper modelFacetToString(facet : gmfgen::TypeModelFacet, node : gmfgen::GenCommonBase) : String {
+	return metaFeatureName(facet.childMetaFeature) + ' from ' + metaClassName(facet.metaClass)
+}
+
+helper modelFacetToString(facet : gmfgen::TypeModelFacet, node : gmfgen::GenNodeLabel) : String {
+	return modelFacetToString(facet, node.node)
+}
+
+helper modelFacetToString(facet : gmfgen::TypeModelFacet, link : gmfgen::GenLinkLabel) : String {
+	return modelFacetToString(facet, link.link)
+}
+
+helper modelFacetToString(facet : gmfgen::TypeLinkModelFacet, node : gmfgen::GenCommonBase) : String {
+	return 'from ' + metaFeatureName(facet.sourceMetaFeature) + ' to ' + metaFeatureName(facet.targetMetaFeature)
+}
+
+helper modelFacetToString(facet : gmfgen::LinkModelFacet, node : gmfgen::GenCommonBase) : String {
+	return 'from ' + metaClassName(facet.getSourceType()) + ' to ' + metaClassName(facet.getTargetType())
+}
+
+helper modelFacetToString(facet : gmfgen::LabelModelFacet, node : gmfgen::GenCommonBase) : String {
+	return 'TODO - auto generated stub'
+}
+
+helper modelFacetFeaturesToComaString(list : Sequence(genmodel::GenFeature), node : gmfgen::GenCommonBase) : String {
+	return (if list->size() = 1
+	then
+	 	metaFeatureName(list->first().oclAsType(GenFeature)) + ' from ' + node.elementType.displayName  
+	else
+		metaFeatureName(list->first().oclAsType(GenFeature)) + ' from ' + node.elementType.displayName + ', ' + modelFacetFeaturesToComaString(list->excluding(list->first()), node)
+	endif)
+}
+
+helper metaFeatureName(feature : genmodel::GenFeature) : String {
+	return feature.ecoreFeature.name
+}
+
+helper metaClassName(clazz : genmodel::GenClass) : String {
+	return clazz.ecoreClass.name
+}
+
+helper modelFacetFeatureString(feature : genmodel::GenFeature) : String {
+	return metaFeatureName(feature) + ' from ' + metaClassName(feature.genClass)
+}
+
+helper cleanString(string : String) : String {
+	return string.xpandReplaceAll(' ', '_')
+}
+
+helper getParentVisualIDForChildNode(child : gmfgen::GenChildLabelNode) : String {
+	return getNodeContainerVisualID(child.containers->first())
+}
+
+helper getParentVisualIDForChildNode(child : gmfgen::GenChildNode) : String {
+	return getNodeContainerVisualID(child.containers->first())
+}
+
+helper getNodeContainerVisualID(container : gmfgen::GenChildContainer) : String {
+	return (if container.oclIsTypeOf(gmfgen::GenCompartment)
+	then
+		container.oclAsType(gmfgen::GenCompartment).node.visualID.oclAsType(String)
+	else
+		container.oclAsType(gmfgen::GenNode).visualID.oclAsType(String)
+	endif
+	)
+}
+
+helper getNodeContainerVisualID(compartment : gmfgen::GenCompartment) : String {
+	return compartment.node.visualID.oclAsType(String)
+}
+
+helper getNodeContainerVisualID(node : gmfgen::GenNode) : String {
+	return node.visualID.oclAsType(String)
+}
+
+helper getChildNodeLabelElementTypeIdentifier(node : gmfgen::GenNodeLabel) : String {
+	return node.node.elementType.uniqueIdentifier
+}
+
+helper getChildNodeLabelElementTypeIdentifier(link : gmfgen::GenLinkLabel) : String {
+	return link.link.elementType.uniqueIdentifier
+}

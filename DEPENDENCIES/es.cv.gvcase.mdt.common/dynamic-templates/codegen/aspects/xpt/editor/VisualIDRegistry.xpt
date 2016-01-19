@@ -1,0 +1,102 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - adaptation to Galileo
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/Ecore'»
+«IMPORT 'http://es.cv.gvcase.mdt.common.gmfgenextension.mutating'»
+
+«EXTENSION MetaModel»
+«EXTENSION xpt::editor::Utils»
+«EXTENSION gmf::EMFUtils»
+
+«REM» fjcano ::  [MutatingCanvas] With mutating canvas
+      multiple elements can be the canvas' element «ENDREM»
+«AROUND getDiagramVisualID FOR gmfgen::GenDiagram-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public static int «EXPAND xpt::editor::VisualIDRegistry::getDiagramVisualIDMethodName»(org.eclipse.emf.ecore.EObject domainElement) {
+		if (domainElement == null) {
+			«EXPAND xpt::editor::VisualIDRegistry::unrecognizedVID-»
+		}
+	«IF null <> domainDiagramElement-»
+		«EXPAND xpt::editor::VisualIDRegistry::returnVisualID-»
+	«ENDIF-»
+	«IF getReferencingObjects(self.oclAsType(ecore::EObject))[mutating::AlternateCanvas]->size() > 0»
+		«FOREACH getReferencingObjects(self.oclAsType(ecore::EObject))[mutating::AlternateCanvas] AS referencer»
+			«EXPAND returnMutatingVisualID FOR referencer»	
+		«ENDFOREACH»
+	«ENDIF»
+	«EXPAND xpt::editor::VisualIDRegistry::unrecognizedVID-»
+	}
+«ENDAROUND»
+
+«AROUND additions FOR gmfgen::GenDiagram»
+	«targetDef.proceed()»
+	«REM» fjcano :: [ViewInfo] Added to alow filtering
+	      the views by type and/or label «ENDREM»
+	«EXPAND createViewInfo FOR self»
+«ENDAROUND»
+
+«REM» fjcano :: [MutatingCanvas] getting a visualId from an element that
+      is contained in a mutating canvas«ENDREM»
+«DEFINE returnMutatingVisualID FOR mutating::AlternateCanvas-»
+if («EXPAND checkMutatingSemanticElement») {
+	return «EXPAND xpt::editor::VisualIDRegistry::visualID FOR diagram»;
+}
+«ENDDEFINE»
+
+«REM» fjcano :: [MutatingCanvas] checking a mutating canvas element «ENDREM»
+«DEFINE checkMutatingSemanticElement FOR mutating::AlternateCanvas-»
+	«EXPAND xpt::editor::VisualIDRegistry::checkDomainElementMetaclass FOR domainDiagramElement» && 
+	«EXPAND xpt::editor::VisualIDRegistry::isDiagramMethodName FOR diagram»((«EXPAND MetaModel::MetaClass FOR domainDiagramElement») domainElement)
+«ENDDEFINE»
+
+«DEFINE isDiagramMethodName FOR gmfgen::GenDiagram»isDiagram«ENDDEFINE»
+
+«AROUND isDiagram FOR gmfgen::GenDiagram-»
+	«IF null != domainDiagramElement-»
+		«EXPAND xpt::Common::generatedMemberComment(
+			"User can change implementation of this method to handle some specific\n" +
+			"situations not covered by default logic.\n"
+		)»
+	private static boolean «EXPAND xpt::editor::VisualIDRegistry::isDiagramMethodName»(«getQualifiedInterfaceName(domainDiagramElement)» element) {
+		return true;
+	}
+	«REM» fjcano :: [MutatingCanvas] «ENDREM»
+	«IF getReferencingObjects(self.oclAsType(ecore::EObject))[mutating::AlternateCanvas]->size() > 0»
+		«FOREACH getReferencingObjects(self.oclAsType(ecore::EObject))[mutating::AlternateCanvas] AS referencer»
+			private static boolean «EXPAND xpt::editor::VisualIDRegistry::isDiagramMethodName»(«getQualifiedInterfaceName(referencer.domainDiagramElement)» element) {
+				return true;
+			}
+		«ENDFOREACH»
+	«ENDIF»
+	«ENDIF-»
+«ENDAROUND»
+
+«DEFINE createViewInfo FOR gmfgen::GenDiagram»
+	«REM» fjcano :: [ViewInfo] Added to alow filtering the views by type and/or label «ENDREM»
+	
+	«REM» fjcano :: [ViewInfo] Diagram visual info for filtering dialog «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	private static es.cv.gvcase.mdt.common.provider.ViewInfo diagramViewInfo = null;
+
+	«REM» fjcano :: [ViewInfo] ViewInfo tree construction «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public static es.cv.gvcase.mdt.common.provider.ViewInfo getDiagramViewInfo() {
+		if (diagramViewInfo == null) {
+			diagramViewInfo = es.cv.gvcase.mdt.common.provider.ViewInfoRegistry.getInstance()
+					.getHeadViewInfoForEditor(«editorGen.editor.packageName».«editorGen.editor.className».ID);
+		}
+		return diagramViewInfo;
+	}
+«ENDDEFINE»

@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Francisco Javier Cano Munyoz (Prodevelop) - extend the MOSKittActionBarContributor
+ */
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«AROUND ActionBarContributor FOR gmfgen::GenEditorView-»
+«EXPAND xpt::Common::copyright FOR editorGen-»
+package «packageName»;
+
+«EXPAND xpt::Common::generatedClassComment»
+«REM» fjcano :: extending the MOSKittActionBarContributor allows the Action bar to be part of a multi page editor «ENDREM»
+public class «actionBarContributorClassName» extends es.cv.gvcase.mdt.common.part.MOSKittActionBarContributor {
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected Class getEditorClass() {
+		return «getQualifiedClassName()».class;
+	}
+
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected String getEditorId() {
+		return «getQualifiedClassName()».ID;
+	}
+	«EXPAND xpt::editor::ActionBarContributor::additions-»
+}
+«ENDAROUND»
+
+

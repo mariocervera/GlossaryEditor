@@ -1,0 +1,56 @@
+/*
+ * Copyright (c) 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«AROUND NodeDescriptor FOR gmfgen::GenDiagramUpdater-»
+	«EXPAND xpt::Common::copyright FOR editorGen-»
+package «editorGen.editor.packageName»;
+
+	«EXPAND xpt::Common::generatedClassComment»
+	«REM» fjcano :: implementing INodeDescriptor interface for common treatment in common code «ENDREM»
+public class «nodeDescriptorClassName» implements es.cv.gvcase.mdt.common.provider.INodeDescriptor {
+
+	«EXPAND xpt::diagram::updater::NodeDescriptor::attributes-»
+	
+	«EXPAND xpt::diagram::updater::NodeDescriptor::_constructor-»
+	
+	«EXPAND xpt::diagram::updater::NodeDescriptor::getModelElement-»
+	
+	«EXPAND xpt::diagram::updater::NodeDescriptor::getVisualID-»
+	
+	«EXPAND getType-»
+		
+	«EXPAND xpt::diagram::updater::NodeDescriptor::additions-»
+}
+«ENDAROUND»
+
+«AROUND attributes FOR gmfgen::GenDiagramUpdater-»
+	«EXPAND xpt::Common::generatedMemberComment»
+private org.eclipse.emf.ecore.EObject myModelElement;
+	
+	«EXPAND xpt::Common::generatedMemberComment»
+private int myVisualID;
+
+	«EXPAND xpt::Common::generatedMemberComment»
+private String myType;
+«ENDAROUND»
+
+«DEFINE getType FOR gmfgen::GenDiagramUpdater-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public String getType() {
+		if (myType == null) {
+			myType = «EXPAND xpt::editor::VisualIDRegistry::typeMethodCall('getVisualID()') FOR editorGen.diagram»;
+		}
+		return myType;
+	}
+«ENDDEFINE»

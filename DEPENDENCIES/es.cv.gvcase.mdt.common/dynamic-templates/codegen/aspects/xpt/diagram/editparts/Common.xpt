@@ -1,0 +1,39 @@
+﻿/*
+ * Copyright (c) 2006, 2009 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::StringOperations»
+
+«AROUND labelFigurePrim FOR gmfgen::FigureViewmap-»
+«IF figureQualifiedClassName = null-»
+	return new org.eclipse.draw2d.Label();
+«ELSE-»
+	«figureQualifiedClassName» label = new «figureQualifiedClassName»();
+	if (label instanceof org.eclipse.gmf.runtime.draw2d.ui.figures.WrappingLabel) {
+		label.setTextWrap(true);
+	}
+	return label;
+«ENDIF-»
+	}
+«ENDAROUND»
+
+«AROUND labelFigurePrim FOR gmfgen::InnerClassViewmap-»
+		«className» label = new «className»();
+		
+		if (label instanceof org.eclipse.gmf.runtime.draw2d.ui.figures.WrappingLabel) {
+			label.setTextWrap(true);
+		}
+		return label;
+	}
+
+	«classBody»
+«ENDAROUND»

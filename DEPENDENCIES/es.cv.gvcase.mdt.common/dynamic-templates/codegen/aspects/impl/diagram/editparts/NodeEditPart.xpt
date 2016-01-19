@@ -1,0 +1,523 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/Ecore'»
+«IMPORT 'http://es.cv.gvcase.mdt.common.gmfextension.appearance'»«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«EXTENSION xpt::diagram::ViewmapAttributesUtils»
+«EXTENSION xpt::diagram::editparts::Utils»
+«EXTENSION gmf::EMFUtils»«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+
+«AROUND extendsListContents FOR gmfgen::GenNode-»
+«IF hasBorderItems(self)»es.cv.gvcase.mdt.common.diagram.editparts.BorderedBorderItemEditPart«ELSE»es.cv.gvcase.mdt.common.diagram.editparts.ShapeNodeEditPart«ENDIF-»
+«ENDAROUND»
+
+«AROUND createDefaultEditPoliciesBody FOR gmfgen::GenNode-»
+	«EXPAND impl::diagram::editparts::NodeEditPart::installCreationRolePolicy-»
+	super.createDefaultEditPolicies();
+	«EXPAND impl::diagram::editparts::NodeEditPart::installPrimaryDragEditPolicy-»
+	«EXPAND xpt::diagram::editparts::Common::installSemanticEditPolicy-»
+	«IF needsGraphicalNodeEditPolicy(self)-»
+		installEditPolicy(org.eclipse.gef.EditPolicy.GRAPHICAL_NODE_ROLE, new «getGraphicalNodeEditPolicyQualifiedClassName()»());
+	«ENDIF-»
+	«IF not childNodes->isEmpty()-»
+		installEditPolicy(org.eclipse.gmf.runtime.diagram.ui.editpolicies.EditPolicyRoles.DRAG_DROP_ROLE, new org.eclipse.gmf.runtime.diagram.ui.editpolicies.DragDropEditPolicy());
+	«ENDIF-»
+	// ** install new ComponentEditPolicy
+	installEditPolicy(org.eclipse.gef.EditPolicy.COMPONENT_ROLE, new es.cv.gvcase.mdt.common.edit.policies.DeleteOnlyViewComponentEditPolicy());
+	«EXPAND xpt::diagram::editparts::Common::installCanonicalEditPolicy-»
+	installEditPolicy(org.eclipse.gef.EditPolicy.LAYOUT_ROLE, createLayoutEditPolicy());
+	«EXPAND xpt::diagram::editparts::Common::behaviour FOR self-»
+	// XXX need an SCR to runtime to have another abstract superclass that would let children add reasonable editpolicies
+	// removeEditPolicy(org.eclipse.gmf.runtime.diagram.ui.editpolicies.EditPolicyRoles.CONNECTION_HANDLES_ROLE);
+«ENDAROUND»
+
+«AROUND handleNotificationEventBody FOR gmfgen::GenTopLevelNode»
+		if (event.getNotifier() == getModel() && org.eclipse.emf.ecore.EcorePackage.eINSTANCE.getEModelElement_EAnnotations().equals(event.getFeature())) {
+		handleMajorSemanticChange();
+	} «EXPAND notificationForShapeStyle»«REM»Added by Gabriel Merin [Appearance]«ENDREM» 
+		else {
+			super.handleNotificationEvent(notification);
+		}
+		
+		// mgil:: if the notification is for ADD an element and the element is
+		// an Edge, don't refresh the Diagram to avoid duplicated Links
+		if (notification.getEventType() == org.eclipse.emf.common.notify.Notification.ADD
+				&& «diagram.editorGen.editor.packageName».«diagram.visualIDRegistryClassName»
+						.«EXPAND xpt::editor::VisualIDRegistry::getLinkWithClassVisualIDMethodName FOR diagram»((org.eclipse.emf.ecore.EObject) notification
+								.getNewValue()) > -1) {
+			return;
+		} else {
+			java.util.List<org.eclipse.emf.ecore.EStructuralFeature> features = new java.util.ArrayList<org.eclipse.emf.ecore.EStructuralFeature>();
+				«FOREACH getDiagram().links AS link -»
+					«IF link.modelFacet != null-»
+						«EXPAND searchFeaturesForSemanticChange(modelFacet) FOR link.modelFacet-»					
+					«ENDIF-»
+				«ENDFOREACH-»
+			es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.handleNotificationForDiagram(this, notification, features);
+		}
+		// mgil:: end
+«ENDAROUND»
+
+«DEFINE searchFeaturesForSemanticChange(typeMF : gmfgen::TypeModelFacet) FOR gmfgen::FeatureLinkModelFacet-»
+«IF typeMF.metaClass <> null and metaFeature.genClass.ecoreClass.isSuperTypeOf(typeMF.metaClass.ecoreClass)-»
+	features.add(«EXPAND MetaModel::MetaFeature FOR metaFeature»);
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE searchFeaturesForSemanticChange(typeMF : gmfgen::TypeModelFacet) FOR gmfgen::TypeLinkModelFacet-»
+«IF typeMF.metaClass <> null and containmentMetaFeature.genClass.ecoreClass.isSuperTypeOf(typeMF.metaClass.ecoreClass)-»
+	features.add(«EXPAND MetaModel::MetaFeature FOR containmentMetaFeature»);
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE searchFeaturesForSemanticChange(typeMF : gmfgen::TypeModelFacet) FOR gmfgen::LinkModelFacet-»
+	// no feature found
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin  [Appearance]«ENDREM»
+«DEFINE appearanceEAnnotationUtils FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected org.eclipse.emf.ecore.EAnnotation getAppearenceEAnnotation() {
+		org.eclipse.emf.ecore.EAnnotation eAnn = getPrimaryView().getEAnnotation(
+				es.cv.gvcase.mdt.common.commands.AnnotateNodeStyleCommand.APPEARANCE_EANNOTATION_NAME);
+		return eAnn;
+	}
+	
+	«EXPAND xpt::Common::generatedMemberComment»
+	private java.util.List<org.eclipse.emf.ecore.EObject> changesFromDefaultStyle() {
+		org.eclipse.emf.ecore.EAnnotation eAnn = getAppearenceEAnnotation();
+		if (eAnn == null)
+			return new java.util.ArrayList<org.eclipse.emf.ecore.EObject>();
+		else
+			return eAnn.getReferences();
+	}
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE notificationForShapeStyle FOR gmfgen::GenNode-»
+		else if (notification.getNotifier() instanceof org.eclipse.gmf.runtime.notation.ShapeStyle) {
+			super.handleNotificationEvent(notification);
+			«REM»Check if changes should be propagated (default behavior is NOT to do so)«ENDREM»
+			«LET getReferencingObjects(self.oclAsType(ecore::EObject))[appearance::CustomElement] AS customElements-»
+				«IF customElements->size() = 0 or  customElements->size() > 1-»
+					«EXPAND propagateStyleChanges(false)-»
+				«ELSEIF customElements->size() = 1-»
+					«LET customElements.oclAsType(appearance::CustomElement)->first() AS cElement-»
+						«EXPAND propagateStyleChanges(cElement.propagateStyle)-»
+					«ENDLET»
+				«ENDIF»
+			«ENDLET»
+		}
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE propagateStyleChanges(allChilds : Boolean) FOR gmfgen::GenContainerBase-»
+			// Propagate style
+			for (java.util.Iterator i = getChildren().iterator(); i.hasNext();) {
+				java.lang.Object obj = i.next();
+				if (!(obj instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart))
+					continue;
+				org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart ep = (org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart) obj;
+				«IF allChilds = false-»
+				«REM»Only edit parts with same semantic element«ENDREM»
+				if (ep.resolveSemanticElement() != resolveSemanticElement())
+					continue;
+				«ENDIF»
+				org.eclipse.gmf.runtime.notation.ShapeStyle style = (org.eclipse.gmf.runtime.notation.ShapeStyle) ((org.eclipse.gmf.runtime.notation.View) ep.getModel()).getStyle(
+						org.eclipse.gmf.runtime.notation.NotationPackage.eINSTANCE.getShapeStyle());
+				if (style != null) {
+					style.eSet((org.eclipse.emf.ecore.EStructuralFeature) notification.getFeature(),
+							notification.getNewValue());
+					ep.refresh();
+				}
+			}
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE appearanceBehaviour FOR gmfgen::GenNode-»
+«LET getReferencingObjects(self.oclAsType(ecore::EObject))[appearance::CustomElement] AS customElements-»
+	«IF customElements->size() = 1-»
+		«REM»Specific Behaviour«ENDREM»
+		«LET customElements.oclAsType(appearance::CustomElement)->first() AS cElement-»
+			«EXPAND isLabel-»«REM»used by setForeground and setFont rules«ENDREM»
+			«EXPAND isFigureFromChildEditPart-»
+			«IF cElement.overrideableFont = true-»
+				«EXPAND setFont(cElement.overrideableFont)-»
+			«ENDIF»
+		«ENDLET»
+	«ELSE-»
+		«REM»Default Behaviour«ENDREM»
+		«EXPAND isLabel-»«REM»used by setForeground and setFont rules«ENDREM»
+		«EXPAND isFigureFromChildEditPart-»
+		«EXPAND setFont(true)-»	
+	«ENDIF»
+«ENDLET»
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE isLabel FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public static boolean isLabel(org.eclipse.draw2d.IFigure figure) {
+		if (figure instanceof org.eclipse.draw2d.Label) {
+			return true;
+		}
+		if (figure instanceof org.eclipse.gmf.runtime.draw2d.ui.figures.WrappingLabel) {
+			return true;
+		}
+		return false;
+	}
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE isFigureFromChildEditPart FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected boolean isFigureFromChildEditPart(org.eclipse.draw2d.IFigure figure) {
+		for (java.util.Iterator i = getChildren().iterator(); i.hasNext();) {
+			java.lang.Object obj = i.next();
+			if (obj instanceof org.eclipse.gef.editparts.AbstractGraphicalEditPart) {
+				org.eclipse.gef.editparts.AbstractGraphicalEditPart gEP = (org.eclipse.gef.editparts.AbstractGraphicalEditPart) obj;
+				if (gEP.getFigure() == figure) {
+					// Check if semantic elements are different
+					if (gEP instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart && ((org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart)gEP).resolveSemanticElement() == resolveSemanticElement()) {
+						return false;
+					}
+					return true;
+				} else {
+					// Check if it is a child figure of the editpart
+					for (java.lang.Object child : gEP.getChildren()) {
+						if (child instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart) {
+							org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart childEP = (org.eclipse.gmf.runtime.diagram.ui.editparts.GraphicalEditPart) child;
+							if (childEP.getFigure() == figure) {
+								if (childEP.resolveSemanticElement() != resolveSemanticElement())
+									return true;
+								else
+									return false;
+							}
+						}
+					}
+				} // end else
+			}
+		}
+		return false;
+	}
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«AROUND setBackgroundColor FOR gmfgen::GenNode-»
+	«LET getReferencingObjects(self.oclAsType(ecore::EObject))[appearance::CustomElement] AS customElements-»
+		«IF customElements->size() = 1-»
+			«REM»Specific Behaviour«ENDREM»
+			«LET customElements.oclAsType(appearance::CustomElement)->first() AS cElement-»
+				«IF cElement.overrideableBG = true-»
+					«EXPAND setBackgroundColor(cElement.overrideableBG)-»
+				«ENDIF»
+			«ENDLET»
+		«ELSE»
+			«EXPAND setBackgroundColor(true)-»
+		«ENDIF»
+	«ENDLET»
+«ENDAROUND»
+
+«DEFINE setBackgroundColor(overrideable : Boolean) FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	@Override
+	protected void setBackgroundColor(org.eclipse.swt.graphics.Color color) {
+	«IF overrideable = true-»
+		// Only update if the Node doesn't have the default style
+		if (changesFromDefaultStyle().contains(org.eclipse.gmf.runtime.notation.NotationPackage.Literals.FILL_STYLE__FILL_COLOR)) {
+			setOwnedFiguresBackgroundColor(getFigure(), color);
+		} else
+			super.setBackgroundColor(color);
+	«ELSE»
+			super.setBackgroundColor(color);
+	«ENDIF»
+	}
+	
+	«IF overrideable = true-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setOwnedFiguresBackgroundColor(org.eclipse.draw2d.IFigure parent, org.eclipse.swt.graphics.Color color) {
+			parent.setBackgroundColor(color);
+			for (java.util.Iterator i = parent.getChildren().iterator(); i.hasNext();) {
+				Object obj = i.next();
+				if (obj instanceof org.eclipse.draw2d.IFigure && !isFigureFromChildEditPart((org.eclipse.draw2d.IFigure) obj)) {
+					setOwnedFiguresBackgroundColor((org.eclipse.draw2d.IFigure) obj, color);
+				}
+			}
+	}
+	«ENDIF»
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«AROUND setForegroundColor FOR gmfgen::GenNode-»
+	«LET getReferencingObjects(self.oclAsType(ecore::EObject))[appearance::CustomElement] AS customElements-»
+		«IF customElements->size() = 1-»
+			«REM»Specific Behaviour«ENDREM»
+			«LET customElements.oclAsType(appearance::CustomElement)->first() AS cElement-»
+				«IF cElement.overrideableBG = true-»
+					«EXPAND setForegroundColor(cElement.overrideableBG)-»
+				«ENDIF»
+			«ENDLET»
+		«ELSE»
+			«EXPAND setForegroundColor(true)-»
+		«ENDIF»
+	«ENDLET»
+«ENDAROUND»
+
+«DEFINE setForegroundColor(overrideable : Boolean) FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	@Override
+	protected void setForegroundColor(org.eclipse.swt.graphics.Color color) {
+	«IF overrideable = true-»
+		// Only update if the Node doesn't have the default style
+		if (changesFromDefaultStyle().contains(org.eclipse.gmf.runtime.notation.NotationPackage.Literals.LINE_STYLE__LINE_COLOR)) {
+				setOwnedFiguresForegroundColor(getFigure(), color);
+		} else
+			super.setForegroundColor(color);
+	«ELSE»
+			super.setForegroundColor(color);
+	«ENDIF»
+	}
+	
+	«IF overrideable = true-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setOwnedFiguresForegroundColor(org.eclipse.draw2d.IFigure parent, org.eclipse.swt.graphics.Color color) {
+			if (!isLabel(parent))
+				parent.setForegroundColor(color);
+			for (java.util.Iterator i = parent.getChildren().iterator(); i.hasNext();) {
+				java.lang.Object obj = i.next();
+				if (obj instanceof org.eclipse.draw2d.IFigure
+						&& !isLabel((org.eclipse.draw2d.IFigure) obj)
+						&& !isFigureFromChildEditPart((org.eclipse.draw2d.IFigure) obj)) {
+					setOwnedFiguresForegroundColor((org.eclipse.draw2d.IFigure) obj, color);
+				}
+			}
+	}
+	«ENDIF»
+«ENDDEFINE»
+
+«REM»Added by Gabriel Merin [Appearance]«ENDREM»
+«DEFINE setFont(overrideable : Boolean) FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	«REM»Font Color«ENDREM»
+	@Override
+	protected void setFontColor(org.eclipse.swt.graphics.Color color) {
+	«IF overrideable = true-»
+		// Only update if the Node doesn't have the default style
+		if (changesFromDefaultStyle().contains(org.eclipse.gmf.runtime.notation.NotationPackage.Literals.LINE_STYLE__LINE_COLOR)) {
+			setOwnedFiguresFontColor(getFigure(), color);
+		} else
+			super.setFontColor(color);
+	«ELSE»
+			super.setFontColor(color);
+	«ENDIF»
+	}
+
+	«IF overrideable = true-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void setOwnedFiguresFontColor(org.eclipse.draw2d.IFigure parent, org.eclipse.swt.graphics.Color color) {
+			if (isLabel(parent))
+				parent.setForegroundColor(color);
+			for (java.util.Iterator i = parent.getChildren().iterator(); i.hasNext();) {
+				Object obj = i.next();
+				if (obj instanceof org.eclipse.draw2d.IFigure
+						&& isLabel((org.eclipse.draw2d.IFigure) obj)
+						&& !isFigureFromChildEditPart((org.eclipse.draw2d.IFigure) obj)) {
+					setOwnedFiguresFontColor((org.eclipse.draw2d.IFigure) obj, color);
+				}
+			}
+	}
+	«ENDIF»
+«ENDDEFINE»
+
+«REM»Added by Marc Gil [label snap]«ENDREM»
+«AROUND addBorderItem FOR gmfgen::GenNode-»
+	«IF getExternalLabels(self)->size() > 0-»
+		«EXPAND xpt::Common::generatedMemberComment»
+		protected void addBorderItem(org.eclipse.draw2d.IFigure borderItemContainer, org.eclipse.gmf.runtime.diagram.ui.editparts.IBorderItemEditPart borderItemEditPart) {
+			// Modify the BorderItemLocator to remove the snap of the labels
+			if (borderItemEditPart instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.LabelEditPart) {
+				org.eclipse.gmf.runtime.diagram.ui.figures.BorderItemLocator locator = new org.eclipse.gmf.runtime.diagram.ui.figures.BorderItemLocator(getMainFigure(),
+						org.eclipse.draw2d.PositionConstants.NSEW) {
+	
+					@Override
+					public void relocate(org.eclipse.draw2d.IFigure borderItem) {
+						org.eclipse.draw2d.geometry.Dimension size = getSize(borderItem);
+						org.eclipse.draw2d.geometry.Rectangle rectSuggested = new org.eclipse.draw2d.geometry.Rectangle(getPreferredLocation(borderItem), size);
+						int closestSide = findClosestSideOfParent(rectSuggested, getParentBorder());
+						setPreferredSideOfParent(closestSide);
+	
+						borderItem.setBounds(rectSuggested);
+	
+						setCurrentSideOfParent(findClosestSideOfParent(
+								rectSuggested, getParentBorder()));
+					}
+					«REM»Added by gmerin«ENDREM»
+					@Override
+					protected org.eclipse.draw2d.geometry.Point getPreferredLocation(int side, org.eclipse.draw2d.IFigure borderItem) {
+						org.eclipse.draw2d.geometry.Point p = super.getPreferredLocation(side, borderItem);
+						if (side == org.eclipse.draw2d.PositionConstants.NORTH	|| side == org.eclipse.draw2d.PositionConstants.SOUTH) {
+							org.eclipse.draw2d.geometry.Dimension borderItemSize = getSize(borderItem);
+							p.x = p.x - borderItemSize.width / 2;
+						} else if (side == org.eclipse.draw2d.PositionConstants.EAST || side == org.eclipse.draw2d.PositionConstants.WEST) {
+							org.eclipse.draw2d.geometry.Dimension borderItemSize = getSize(borderItem);
+							p.y = p.y - borderItemSize.height / 2;
+						}
+						return p;
+					}
+					
+				};
+				«REM»Added by gmerin«ENDREM»
+				«FOREACH getExternalLabels(self) AS label SEPARATOR 'else '-»
+				if (borderItemEditPart instanceof «label.getEditPartQualifiedClassName()» )
+					locator«label.editPartClassName»(locator);
+				«ENDFOREACH»
+				
+				borderItemContainer.add(borderItemEditPart.getFigure(), locator);
+			} 
+			else if («FOREACH getExternalLabels(self) AS label SEPARATOR ' || '»borderItemEditPart instanceof «label.getEditPartQualifiedClassName()»«ENDFOREACH») {
+				org.eclipse.gmf.runtime.diagram.ui.figures.BorderItemLocator locator = new org.eclipse.gmf.runtime.diagram.ui.figures.BorderItemLocator(getMainFigure(), org.eclipse.draw2d.PositionConstants.SOUTH);
+				locator.setBorderItemOffset(new org.eclipse.draw2d.geometry.Dimension(-20, -20));
+				borderItemContainer.add(borderItemEditPart.getFigure(), locator);
+			} else {
+				super.addBorderItem(borderItemContainer, borderItemEditPart);
+			}
+		}
+		«REM»Added by gmerin«ENDREM»
+		«FOREACH getExternalLabels(self) AS label»
+		«EXPAND xpt::Common::generatedMemberComment»
+		protected void locator«label.editPartClassName»(org.eclipse.gmf.runtime.diagram.ui.figures.BorderItemLocator locator) {
+			locator.setBorderItemOffset(new org.eclipse.draw2d.geometry.Dimension(«labelOffsetX(label.viewmap, 0)», «labelOffsetY(label.viewmap, 0)»));
+			locator.setPreferredSideOfParent(org.eclipse.draw2d.PositionConstants.SOUTH);
+		}
+		«ENDFOREACH»
+	«ENDIF-»
+«ENDAROUND»
+
+«REM»Added by Marc Gil [label snap]«ENDREM»
+«AROUND createLayoutEditPolicyBody FOR gmfgen::GenNode-»
+	«IF gmfgen::ViewmapLayoutType::XY_LAYOUT = getLayoutType()-»
+		org.eclipse.gmf.runtime.diagram.ui.editpolicies.XYLayoutEditPolicy lep = new org.eclipse.gmf.runtime.diagram.ui.editpolicies.XYLayoutEditPolicy() {
+
+			protected org.eclipse.gef.EditPolicy createChildEditPolicy(org.eclipse.gef.EditPart child) {
+				«IF hasBorderItems(self)-»
+					if (child instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.IBorderItemEditPart) {
+						return new org.eclipse.gmf.runtime.diagram.ui.editpolicies.BorderItemSelectionEditPolicy();
+					}
+				«ENDIF-»
+				org.eclipse.gef.EditPolicy result = super.createChildEditPolicy(child);
+				if (result == null) {
+					return new org.eclipse.gmf.runtime.diagram.ui.editpolicies.ResizableShapeEditPolicy();
+				}
+				return result;
+			}
+		};
+		return lep;
+	«ELSEIF gmfgen::ViewmapLayoutType::TOOLBAR_LAYOUT = getLayoutType()»
+		org.eclipse.gmf.runtime.diagram.ui.editpolicies.ConstrainedToolbarLayoutEditPolicy lep = new org.eclipse.gmf.runtime.diagram.ui.editpolicies.ConstrainedToolbarLayoutEditPolicy() {
+
+			protected org.eclipse.gef.EditPolicy createChildEditPolicy(org.eclipse.gef.EditPart child) {
+				«IF hasBorderItems(self)-»
+					if (child instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.IBorderItemEditPart) {
+						return new org.eclipse.gmf.runtime.diagram.ui.editpolicies.BorderItemSelectionEditPolicy();
+					}
+				«ENDIF-»
+				if (child.getEditPolicy(org.eclipse.gef.EditPolicy.PRIMARY_DRAG_ROLE) == null) {
+					if (child instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.ITextAwareEditPart) {
+						return new «getDiagram().getTextSelectionEditPolicyQualifiedClassName()»();
+					}
+				}
+				return super.createChildEditPolicy(child);
+			}
+		};
+		return lep;
+	«ELSEIF gmfgen::ViewmapLayoutType::FLOW_LAYOUT = getLayoutType()»
+		org.eclipse.gef.editpolicies.FlowLayoutEditPolicy lep = new org.eclipse.gef.editpolicies.FlowLayoutEditPolicy() {
+
+			«IF hasBorderItems(self)-»
+				protected org.eclipse.gef.EditPolicy createChildEditPolicy(org.eclipse.gef.EditPart child) {
+					«EXPAND borderItemSelectionEditPolicy-»
+					return super.createChildEditPolicy(child);
+				}
+			«ENDIF-»
+
+			protected org.eclipse.gef.commands.Command createAddCommand(org.eclipse.gef.EditPart child, org.eclipse.gef.EditPart after) {
+				return null;
+			}
+
+			protected org.eclipse.gef.commands.Command createMoveChildCommand(org.eclipse.gef.EditPart child, org.eclipse.gef.EditPart after) {
+				return null;
+			}
+
+			protected org.eclipse.gef.commands.Command getCreateCommand(org.eclipse.gef.requests.CreateRequest request) {
+				return null;
+			}
+		};
+		return lep;
+	«ELSE-»
+		org.eclipse.gef.editpolicies.LayoutEditPolicy lep = new org.eclipse.gef.editpolicies.LayoutEditPolicy() {
+
+			protected org.eclipse.gef.EditPolicy createChildEditPolicy(org.eclipse.gef.EditPart child) {
+				«IF hasBorderItems(self)-»
+					// Commented to show the "virtual" link that links the two nodes
+					// if (child instanceof org.eclipse.gmf.runtime.diagram.ui.editparts.IBorderItemEditPart) {
+					// 	return new org.eclipse.gmf.runtime.diagram.ui.editpolicies.BorderItemSelectionEditPolicy();
+					// }
+				«ENDIF-»
+				org.eclipse.gef.EditPolicy result = child.getEditPolicy(org.eclipse.gef.EditPolicy.PRIMARY_DRAG_ROLE);
+				if (result == null) {
+					result = new org.eclipse.gef.editpolicies.NonResizableEditPolicy();
+				}
+				return result;
+			}
+
+			protected org.eclipse.gef.commands.Command getMoveChildrenCommand(org.eclipse.gef.Request request) {
+				return null;
+			}
+
+			protected org.eclipse.gef.commands.Command getCreateCommand(org.eclipse.gef.requests.CreateRequest request) {
+				return null;
+			}
+		};
+		return lep;
+	«ENDIF-»
+«ENDAROUND»
+
+«DEFINE getViewer FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	@Override
+	public org.eclipse.gef.EditPartViewer getViewer() {
+		if (getRoot() != null) {
+			return getRoot().getViewer();
+		} else {
+			return es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.getDiagramEditPart().getViewer();
+		}
+	}
+«ENDDEFINE»
+
+«DEFINE getDeclaredBackgroundColor FOR gmfgen::GenNode»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public static org.eclipse.swt.graphics.Color getDeclaredBackgroundColor() {
+	    for (java.lang.reflect.Field field : «getEditPartQualifiedClassName()».class.getDeclaredFields()) {
+                if (field.getName().equals("THIS_BACK")) {
+                    try {
+                        return (org.eclipse.swt.graphics.Color) field.get(«getEditPartQualifiedClassName()».class);
+                    } catch (java.lang.Exception e) {
+                        return org.eclipse.draw2d.ColorConstants.black;
+                    }
+                }
+            }
+        return org.eclipse.draw2d.ColorConstants.black;
+	}
+«ENDDEFINE»
+

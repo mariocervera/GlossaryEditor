@@ -1,0 +1,66 @@
+/*
+ * Copyright (c) 2007, 2009 Borland Software Corporation * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ *    Artem Tikhomirov (Borland) - [257119] Create views directly, not through ViewFactories
+ *	  Francisco Javier Cano - Adaptation to MOSKitt.
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+
+«EXTENSION xpt::diagram::Utils»
+«EXTENSION xpt::diagram::ViewmapAttributesUtils»
+«EXTENSION xpt::diagram::editpolicies::LinkUtils»
+
+«AROUND createNodeMethod FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public org.eclipse.gmf.runtime.notation.Node create«getUniqueIdentifier()»(org.eclipse.emf.ecore.EObject domainElement, org.eclipse.gmf.runtime.notation.View containerView, int index, boolean persisted, org.eclipse.gmf.runtime.diagram.core.preferences.PreferencesHint preferencesHint) {
+«IF viewmap.canUseShapeStyle()-»
+		org.eclipse.gmf.runtime.notation.Shape node = org.eclipse.gmf.runtime.notation.NotationFactory.eINSTANCE.createShape();
+«ELSE-»
+		org.eclipse.gmf.runtime.notation.Node node = org.eclipse.gmf.runtime.notation.NotationFactory.eINSTANCE.createNode();
+		node.getStyles().add(org.eclipse.gmf.runtime.notation.NotationFactory.eINSTANCE.createDescriptionStyle());«REM»FIXME Contionally add this style, whether toolsmith needs Notes or not«ENDREM»
+		«EXPAND xpt::diagram::views::Utils::addFontLineFillStylesConditionally('node.getStyles()') FOR viewmap-»
+«ENDIF-»
+		«EXPAND xpt::diagram::views::Utils::addLinkedDiagramStyle('node.getStyles()')-»
+		«EXPAND xpt::diagram::views::Utils::addCustomStyles('node.getStyles()')-»
+		«REM»__START__ addition of FillStyle and LineStyle«ENDREM»
+		«EXPAND lineAndFillStyleForNode»
+		«REM»__END__ addition of FillStyle and LineStyle«ENDREM»
+		node.setLayoutConstraint(org.eclipse.gmf.runtime.notation.NotationFactory.eINSTANCE.createBounds());
+		node.setType(«EXPAND xpt::editor::VisualIDRegistry::typeMethodCall»);
+		org.eclipse.gmf.runtime.diagram.core.util.ViewUtil.insertChildView(containerView, node, index, persisted);
+		node.setElement(domainElement);
+«IF self.oclIsTypeOf(gmfgen::GenTopLevelNode)-»
+		stampShortcut(containerView, node);
+«ENDIF-»
+		// initializeFromPreferences «REM»XXX Perhaps, do init only once, for complete figure?«ENDREM»
+		final org.eclipse.jface.preference.IPreferenceStore prefStore = (org.eclipse.jface.preference.IPreferenceStore) preferencesHint.getPreferenceStore();
+		«EXPAND xpt::providers::ViewProvider::initializeStyles('node', 'prefStore', not viewmap.isFixedForeground(), not viewmap.isFixedBackground(), not viewmap.isFixedFont())-»
+		«EXPAND xpt::providers::ViewProvider::initLabel('node', 'prefStore') FOREACH labels-»
+		«EXPAND xpt::providers::ViewProvider::initCompartment('node', 'prefStore') FOREACH compartments-»
+		return node;
+	}
+«ENDAROUND»
+
+
+«DEFINE lineAndFillStyleForNode FOR gmfgen::GenNode»
+		org.eclipse.gmf.runtime.notation.FillStyle fillStyle = org.eclipse.gmf.runtime.notation.NotationFactory.eINSTANCE.createFillStyle();
+		org.eclipse.swt.graphics.Color color = «getEditPartQualifiedClassName()».getDeclaredBackgroundColor();
+		fillStyle.setFillColor(org.eclipse.gmf.runtime.draw2d.ui.figures.FigureUtilities.colorToInteger(color));
+		node.getStyles().add(fillStyle);
+		org.eclipse.gmf.runtime.notation.LineStyle lineStyle = org.eclipse.gmf.runtime.notation.NotationFactory.eINSTANCE.createLineStyle();
+		lineStyle.setLineColor(org.eclipse.gmf.runtime.draw2d.ui.figures.FigureUtilities.RGBToInteger(new org.eclipse.swt.graphics.RGB(0, 0, 0)));
+		node.getStyles().add(lineStyle);
+«ENDDEFINE»
+
+
+«DEFINE lineAndFillStyleForNode FOR gmfgen::GenChildLabelNode»
+	«REM»A GenChildLabelNode needs no Line or Fill style«ENDREM»
+«ENDDEFINE»
+

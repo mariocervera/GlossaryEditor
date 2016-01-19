@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="es.cv.gvcase.mdt.common" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="es.cv.gvcase.mdt.common" id="editorAssistantProvider" name="editorAssistantProvider"/>
+      </appinfo>
+      <documentation>
+         [Enter description of this extension point.]
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="Assistant" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Assistant">
+      <annotation>
+         <documentation>
+            Root for an assistant provider for an editor.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="AssistedEditPart" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="editorID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Reference to the editor being assisted.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.ui.editors/editor/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="AssistedEditPart">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="Include" minOccurs="0" maxOccurs="1"/>
+            <element ref="Exclude" minOccurs="0" maxOccurs="1"/>
+         </sequence>
+         <attribute name="editPartClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Qualified name of the EditPart being assisted.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.gef.EditPart"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="customizerClass" type="string">
+            <annotation>
+               <documentation>
+                  Customization by java code.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":es.cv.gvcase.mdt.common.provider.assistant.AssistantCustomizeEditPart"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Include">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="ElementType" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="Exclude">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="ElementType" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="ElementType">
+      <complexType>
+         <attribute name="typeID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Element type identifier.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.gmf.runtime.emf.type.core.elementTypes/metamodel/metamodelType/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="since"/>
+      </appinfo>
+      <documentation>
+         [Enter the first release in which this extension point appears.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiinfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="implementation"/>
+      </appinfo>
+      <documentation>
+         [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
+
+
+</schema>

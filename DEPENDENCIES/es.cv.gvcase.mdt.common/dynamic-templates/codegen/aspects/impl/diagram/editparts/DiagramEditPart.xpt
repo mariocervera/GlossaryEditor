@@ -1,0 +1,31 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/Ecore'»
+«EXTENSION xpt::diagram::editparts::Utils»
+
+«AROUND createDefaultEditPoliciesBody FOR gmfgen::GenDiagram-»
+	super.createDefaultEditPolicies();
+	«EXPAND xpt::diagram::editparts::Common::installSemanticEditPolicy-»
+	«EXPAND xpt::diagram::editparts::Common::installCanonicalEditPolicy-»
+	«REM»«IF generateCreateShortcutAction() && null == editorGen.application-»«ENDREM»
+		installEditPolicy(org.eclipse.gmf.runtime.diagram.ui.editpolicies.EditPolicyRoles.DRAG_DROP_ROLE, new es.cv.gvcase.mdt.common.edit.policies.DiagramDragDropEditPolicy(resolver));
+	«REM»«ENDIF-»«ENDREM»
+	«IF shouldGenerateDiagramViewmap(self)-»
+		// diagram figure does layout; need to install child editpolicy to show selection feedback
+		installEditPolicy(org.eclipse.gef.EditPolicy.LAYOUT_ROLE, new es.cv.gvcase.mdt.common.edit.policies.NoLayoutEditPolicy());
+	«ENDIF-»
+	«EXPAND xpt::diagram::editparts::Common::behaviour FOR self-»
+	// removeEditPolicy(org.eclipse.gmf.runtime.diagram.ui.editpolicies.EditPolicyRoles.POPUPBAR_ROLE);
+«ENDAROUND»

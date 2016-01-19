@@ -1,0 +1,71 @@
+/*
+ * Copyright (c) 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ *    Dmitry Stadnik (Borland) - creation logic was moved in commands
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«EXTENSION xpt::diagram::editpolicies::Utils»
+
+«AROUND createLinkCommands FOR gmfgen::GenLinkEnd-»
+
+«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.gef.commands.Command getCreateRelationshipCommand(
+		org.eclipse.gmf.runtime.emf.type.core.requests.CreateRelationshipRequest req) {
+	org.eclipse.gef.commands.Command command = req.getTarget() == null ?
+			getStartCreateRelationshipCommand(req) : getCompleteCreateRelationshipCommand(req);
+	return command != null ? command : super.getCreateRelationshipCommand(req);
+}
+
+«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.gef.commands.Command getStartCreateRelationshipCommand(
+		org.eclipse.gmf.runtime.emf.type.core.requests.CreateRelationshipRequest req) {
+	«EXPAND xpt::diagram::editpolicies::linkCommands::startLinkCommands(self) FOREACH getAllPotentialLinks(self)-»
+	return null;
+}
+
+«EXPAND xpt::Common::generatedMemberComment»
+protected org.eclipse.gef.commands.Command getCompleteCreateRelationshipCommand(
+		org.eclipse.gmf.runtime.emf.type.core.requests.CreateRelationshipRequest req) {
+		«REM»fjcano:: we set a parameter in the request to pass the Diagram  «ENDREM»
+		org.eclipse.gmf.runtime.notation.Diagram diagram = es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.findDiagramFromEditPart(getHost());
+		if (diagram != null) {
+			req.getParameters().put(es.cv.gvcase.mdt.common.util.MultiDiagramUtil.BelongToDiagramSource, diagram);
+		}
+	«EXPAND xpt::diagram::editpolicies::linkCommands::completeLinkCommands(self) FOREACH getAllPotentialLinks(self)-»
+	return null;
+}
+«ENDAROUND»
+
+«AROUND reorientTypeLinkCommands FOR gmfgen::GenLinkEnd-»
+
+«EXPAND xpt::Common::generatedMemberComment(
+	'Returns command to reorient EClass based link. New link target or source\n' +
+	'should be the domain model element associated with this node.\n'
+)»
+protected org.eclipse.gef.commands.Command getReorientRelationshipCommand(
+		org.eclipse.gmf.runtime.emf.type.core.requests.ReorientRelationshipRequest req) {
+	
+	// add the view element
+	req.setParameter(es.cv.gvcase.mdt.common.ids.ReorientLinkIDs.nodeEditPart,
+				((org.eclipse.gmf.runtime.diagram.ui.editparts.IGraphicalEditPart) this.getHost()).getNotationView());
+	// add the view link
+	java.util.List list = es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil
+			.getEObjectViews(req.getRelationship());
+	if (list.size() > 0) {
+		req.setParameter(es.cv.gvcase.mdt.common.ids.ReorientLinkIDs.linkEditPart, list.get(0));
+	}
+	
+	switch (getVisualID(req)) {
+	«EXPAND xpt::diagram::editpolicies::linkCommands::reorientLinkCommand FOREACH getReroutableTypeLinks(self)-»
+	}
+	return super.getReorientRelationshipCommand(req);
+}
+«ENDAROUND»

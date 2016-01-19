@@ -1,0 +1,262 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="es.cv.gvcase.mdt.common" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="es.cv.gvcase.mdt.common" id="editorPalette" name="editorPalette"/>
+      </appinfo>
+      <documentation>
+         [Enter description of this extension point.]
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="Palette" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="identifier" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Palette">
+      <annotation>
+         <documentation>
+            Describes an editor palette.
+Can modify an existing editor&apos;s palette or create a full new palette for an editor.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="Group" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="Tool" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="editorID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  References a defined Editor.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.ui.editors/editor/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="newPalette" type="boolean">
+            <annotation>
+               <documentation>
+                  If True, the defined palette for the editor won&apos;t be loaded.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Group">
+      <complexType>
+         <attribute name="groupID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Identifier for this palette group.
+Shuld be unique.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string">
+            <annotation>
+               <documentation>
+                  Label for this group.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="remove" type="boolean">
+            <annotation>
+               <documentation>
+                  If True, this group will be removed from the palette.
+When true, parentGroupID and label are not required.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Tool">
+      <complexType>
+         <choice>
+            <element ref="Runnable"/>
+            <element ref="ElementType"/>
+         </choice>
+         <attribute name="toolID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Identifies a toolID.
+Should be unique.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="parentID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  References the containing group.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string">
+            <annotation>
+               <documentation>
+                  Tool label.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Description for this tool.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="resource"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="remove" type="boolean">
+            <annotation>
+               <documentation>
+                  If True, this tool will be removed from the palette.
+When True, parentID, label, description and icon are not required.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="ElementType">
+      <complexType>
+         <attribute name="elementID" type="string" use="required">
+            <annotation>
+               <documentation>
+                  References a defined EMF ElementType.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.gmf.runtime.emf.type.core.elementTypes/metamodel/metamodelType/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="type" use="required">
+            <annotation>
+               <documentation>
+                  Either a Node or an Edge.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="node">
+                  </enumeration>
+                  <enumeration value="edge">
+                  </enumeration>
+               </restriction>
+            </simpleType>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Runnable">
+      <annotation>
+         <documentation>
+            A runnable element that can execute code via its run method.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="runnableClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Runnable class.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":java.lang.Runnable"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="since"/>
+      </appinfo>
+      <documentation>
+         [Enter the first release in which this extension point appears.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiinfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="implementation"/>
+      </appinfo>
+      <documentation>
+         [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
+
+
+</schema>

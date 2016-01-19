@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="es.cv.gvcase.mdt.common" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="es.cv.gvcase.mdt.common" id="templateElementTool" name="templateElementTool"/>
+      </appInfo>
+      <documentation>
+         [Enter description of this extension point.]
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="TemplateTool"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="TemplateTool">
+      <annotation>
+         <documentation>
+            A template tool entry that will appear in the palette of the indicated editor(s)
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="Element" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="EditorGroup" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  This template tool&apos;s identifier.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="nsURI" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Target EPackage and EFactory URI.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.emf.ecore.generated_package/package/@uri"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  This tool&apos;s name
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="imageLarge" type="string">
+            <annotation>
+               <documentation>
+                  This tool&apos;s large image path.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="elementCreator" type="string">
+            <annotation>
+               <documentation>
+                  Class that can take care of the elements creation.
+If no one is provided, a default one will be used.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":es.cv.gvcase.mdt.common.palette.ElementCreator"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="elementConfigurator" type="string">
+            <annotation>
+               <documentation>
+                  Class that can take care of elements configuration.
+If none is provided, a default one will be used.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":es.cv.gvcase.mdt.common.palette.ElementConfigurator"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  The tool&apos;s description.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="imageSmall" type="string">
+            <annotation>
+               <documentation>
+                  This tool&apos;s small image path.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="Element">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="Element" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The element&apos;s EClass name.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="packageUri" type="string">
+            <annotation>
+               <documentation>
+                  This element&apos;s package&apos;s uri if it&apos;s different from the one defined in the tool.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.emf.ecore.generated_package/package/@uri"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="createdElementId" type="string">
+            <annotation>
+               <documentation>
+                  This element&apos;s id when it&apos;s being built do that other elements can reference it.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="parent" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="containment" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The name of the reference that contains this kind of element in the parent.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="addToDiagram" type="boolean">
+            <annotation>
+               <documentation>
+                  If true, this element will be added to the views of the diagram.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="EditorGroup">
+      <complexType>
+         <attribute name="editor" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Editor identifier.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="es.cv.gvcase.mdt.common.moskittEditorFactory/MOSKittEditorFactory/@editorID"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="group" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Palette&apos;s group identifier.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         [Enter the first release in which this extension point appears.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="apiinfo"/>
+      </appInfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
+
+
+</schema>

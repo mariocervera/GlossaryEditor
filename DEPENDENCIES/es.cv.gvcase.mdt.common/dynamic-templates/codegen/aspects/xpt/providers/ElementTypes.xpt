@@ -1,0 +1,32 @@
+/*******************************************************************************
+ * Copyright (c) 2009 Conselleria de Infraestructuras y Transporte, Generalitat 
+ * de la Comunitat Valenciana . All rights reserved. This program
+ * and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors: Francisco Javier Cano Munyoz (Prodevelop) - registering of the model types provider
+ *                                                         - adaptation to Galileo
+ *
+ ******************************************************************************/
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/GenModel'»
+«EXTENSION xpt::diagram::Utils»
+«EXTENSION xpt::GenModelUtils»
+
+«AROUND additions FOR gmfgen::GenDiagram-»
+«REM» fjcano :: [ViewInfo] this static block registers the label
+      and image provider for ViewInfo structures, so that they are
+      shown properly in the filter views dialog. «ENDREM»
+	«EXPAND xpt::Common::generatedMemberComment»
+	static {
+		es.cv.gvcase.mdt.common.provider.ModelTypesProviderFactory.registerModelTypesProvider(
+		«editorGen.editor.packageName».«editorGen.editor.className».ID, new es.cv.gvcase.mdt.common.provider.BaseModelTypeProvider() {
+			@Override
+			public org.eclipse.swt.graphics.Image getImageHelper(org.eclipse.core.runtime.IAdaptable hint) {
+				return getImage(hint);
+			}
+		});
+	}
+«ENDAROUND»

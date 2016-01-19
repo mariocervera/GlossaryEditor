@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2006, 2007 Borland Software Corporation
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Dmitry Stadnik (Borland) - initial API and implementation
+ *    Alexander Shatalin (Borland) - initial API and implementation
+ */
+
+«IMPORT 'http://www.eclipse.org/gmf/2009/GenModel'»
+«IMPORT 'http://www.eclipse.org/emf/2002/Ecore'»
+«EXTENSION xpt::diagram::ViewmapAttributesUtils»
+«EXTENSION xpt::StringOperations»
+
+«AROUND labelSetter FOR gmfgen::GenCommonBase-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public void «EXPAND impl::diagram::editparts::TextAware::labelSetterName FOR viewmap»(«EXPAND impl::diagram::editparts::TextAware::labelSetterFigureClassName FOR viewmap» figure) {
+		unregisterVisuals();
+		setFigure(figure);
+		defaultText = getLabelTextHelper(figure);
+		if (figure instanceof org.eclipse.gmf.runtime.draw2d.ui.figures.WrappingLabel) {
+			org.eclipse.gmf.runtime.draw2d.ui.figures.WrappingLabel wrappingLabel = (org.eclipse.gmf.runtime.draw2d.ui.figures.WrappingLabel) figure;
+			wrappingLabel.setTextWrap(true);
+			wrappingLabel.setAlignment(org.eclipse.draw2d.PositionConstants.CENTER);
+			wrappingLabel.setTextJustification(org.eclipse.draw2d.PositionConstants.CENTER);
+		}
+		registerVisuals();
+		refreshVisuals();
+	}
+«ENDAROUND»
+
+«AROUND getParser(modelFacet : gmfgen::LabelModelFacet, diagram : gmfgen::GenDiagram, host : gmfgen::GenCommonBase) FOR gmfgen::GenCommonBase-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	public org.eclipse.gmf.runtime.common.ui.services.parser.IParser getParser() {
+		if (parser == null) {
+            parser = «EXPAND parsers::ParserProvider::accessorCall(host, modelFacet, 'getParserElement()')»;
+			«EXPAND addWrapperParser FOR modelFacet-»
+		}
+		return parser;
+	}
+«ENDAROUND»
+
+«AROUND getManager(diagram : gmfgen::GenDiagram) FOR gmfgen::GenCommonBase-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	protected org.eclipse.gef.tools.DirectEditManager getManager() {
+		if (manager == null) {
+			setManager(new org.eclipse.gmf.runtime.diagram.ui.tools.TextDirectEditManager(this,
+				org.eclipse.gmf.runtime.gef.ui.internal.parts.WrapTextCellEditor.class,
+				«diagram.getEditPartFactoryQualifiedClassName()».getTextCellEditorLocator(this)));
+		}
+		return manager;
+	}
+«ENDAROUND»
+
+«DEFINE addWrapperParser FOR gmfgen::FeatureLabelModelFacet»
+	«IF viewPattern <> null and viewPattern.xpandSplit(' ')->exists(s | s.oclAsType(String).xpandMatches('%SHOWCONTAINER%'))-»
+		parser = new es.cv.gvcase.mdt.common.parsers.ContainerNameParserWrapper(parser, getNotationView());
+	«ENDIF»
+«ENDDEFINE»
+
+«DEFINE addWrapperParser FOR gmfgen::LabelModelFacet»
+«ENDDEFINE»
+
+«DEFINE getViewer FOR gmfgen::GenNode-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	@Override
+	public org.eclipse.gef.EditPartViewer getViewer() {
+		if (getRoot() != null) {
+			return getRoot().getViewer();
+		} else {
+			return es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.getDiagramEditPart().getViewer();
+		}
+	}
+«ENDDEFINE»
+
+«DEFINE getViewer FOR gmfgen::GenLabel-»
+	«EXPAND xpt::Common::generatedMemberComment»
+	@Override
+	public org.eclipse.gef.EditPartViewer getViewer() {
+		if (getRoot() != null) {
+			return getRoot().getViewer();
+		} else {
+			return es.cv.gvcase.mdt.common.util.DiagramEditPartsUtil.getDiagramEditPart().getViewer();
+		}
+	}
+«ENDDEFINE»
