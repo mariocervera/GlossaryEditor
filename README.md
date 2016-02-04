@@ -2,7 +2,7 @@
 
 This repository contains the set of Eclipse plug-ins that implement the glossary editor that is integrated in the MOSKitt platform (https://www.prodevelop.es/en/products/MOSKitt). This editor allows the user to define (as models) glossaries of terms by means of a form-based graphical user interface.
 
-To develop the glossary editor, I used the FEFEM framework (see "/DEPENDENCIES/es.cv.gvcase.fefem.common"), which I also developed alongside my colleagues of the MOSKitt team. An introduction to the development of form-based editors using FEFEM is provided in the following presentation:
+To develop the glossary editor, I used the FEFEM framework (see "/DEPENDENCIES/es.cv.gvcase.fefem.common"), which I also developed alongside my colleagues of the MOSKitt team. FEFEM is based on model-driven Eclipse technologies such as the Eclipse Modeling Framework (EMF) and JFace Databinding. An introduction to the development of form-based editors using FEFEM is provided in the following presentation:
 
 http://www.slideshare.net/mcervera/development-of-forms-editors-based-on-ecore-metamodels-presentation-793692
 
