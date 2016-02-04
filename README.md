@@ -2,7 +2,7 @@
 
 This repository contains the set of Eclipse plug-ins that implement the glossary editor that is integrated in the MOSKitt platform (https://www.prodevelop.es/en/products/MOSKitt). This editor allows the user to define (as models) glossaries of terms by means of a form-based interface.
 
-To develop the glossary editor, I made use of the FEFEM framework (see "/DEPENDENCIES/es.cv.gvcase.fefem.common"), which I also developed alonside my colleagues of the MOSKitt team. An introduction to the development of form-based editors using FEFEM is provided in the following presentation:
+To develop the glossary editor, I made use of the FEFEM framework (see "/DEPENDENCIES/es.cv.gvcase.fefem.common"), which I also developed alongside my colleagues of the MOSKitt team. An introduction to the development of form-based editors using FEFEM is provided in the following presentation:
 
 http://www.slideshare.net/mcervera/development-of-forms-editors-based-on-ecore-metamodels-presentation-793692
 
@@ -13,6 +13,6 @@ http://www.eclipse.org/downloads/packages/release/Galileo/SR2
 Steps for installation and testing:
 
 1. Import the plug-ins of this repository (both in the root folder and the DEPENDENCIES folder) into the Eclipse workspace.
-2. Extract the content of the file "dropins.zip" into the "dropins" folder of Eclipse
-3. Run a second instance of Eclipse (Run as -> Eclipse Application)
-4. In this second instance, create a file of type "Glossary" 
+2. Extract the content of the file "dropins.zip" into the "dropins" folder of Eclipse.
+3. Run a second instance of Eclipse (Run as -> Eclipse Application).
+4. In this second instance, create a file of type "Glossary".
